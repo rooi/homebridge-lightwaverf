@@ -75,7 +75,6 @@ LightWaveRFPlatform.prototype = {
         
       callback(foundAccessories);
 
-      });
     };
   } ,
   
