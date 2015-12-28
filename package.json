@@ -18,6 +18,6 @@
   },
 
   "dependencies": {
-    "node-lightwaverf": ">0.0.1"
+    "lightwaverf": ">0.0.1"
   }
 }
