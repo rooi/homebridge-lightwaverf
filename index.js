@@ -25,6 +25,7 @@
 "use strict";
 
 var lightwaverf = require("lightwaverf");
+var path = require('path');
 
 var Service, Characteristic;
 
