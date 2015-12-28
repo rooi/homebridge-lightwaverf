@@ -80,6 +80,8 @@ LightWaveRFPlatform.prototype = {
       callback(foundAccessories);
 
     };
+      
+    getLights();
   } ,
   
   getVersion: function() {
