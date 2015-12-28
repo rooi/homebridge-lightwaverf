@@ -67,7 +67,7 @@ LightWaveRFPlatform.prototype = {
     var that = this;
     var getLights = function () {
       that.log("Creating lightwaverf with ip:" + that.ip_address + ", email:" + that.email + ", pin:" + that.pin);
-      var api = new lightwaverf({that.ip_address, that.email, that.pin});
+      var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin});
       that.log("Finished creating lightwaverf");
 
       var foundAccessories = [];
