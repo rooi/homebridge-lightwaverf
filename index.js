@@ -66,9 +66,9 @@ LightWaveRFPlatform.prototype = {
     this.log("Fetching LightWaveRF switches and dimmers...");
     var that = this;
     var getLights = function () {
-      console.log("Creating lightwaverf with ip:" + that.ip_address + ", email:" + that.email + ", pin:" + that.pin);
+      this.log("Creating lightwaverf with ip:" + that.ip_address + ", email:" + that.email + ", pin:" + that.pin);
       var api = new lightwaverf(that.ip_address, that.email, that.pin);
-        console.log("Finished creating lightwaverf");
+      this.log("Finished creating lightwaverf");
 
       var foundAccessories = [];
       for(var i=0;i<api.devices.length;i++) {
