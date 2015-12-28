@@ -24,7 +24,7 @@
 
 "use strict";
 
-var lightwaverf = require("node-lightwaverf");
+var lightwaverf = require("lightwaverf");
 
 var Service, Characteristic;
 
