@@ -207,7 +207,7 @@ LightWaveRFAccessory.prototype = {
 	lightbulbService
 	.addCharacteristic(Characteristic.Brightness)
 	.on('get', function(callback) { that.getState("brightness", callback);})
-	.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
+	//.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
     .value = this.extractValue("brightness", this.device);
 
 	var informationService = new Service.AccessoryInformation();
