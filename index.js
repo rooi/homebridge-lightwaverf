@@ -140,23 +140,27 @@ LightWaveRFAccessory.prototype = {
     switch(characteristic.toLowerCase()) {
       case 'identify':
         // Turn on twice to let the light blink
+        if(this.status == 0) this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
         this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
-        this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
+        this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
         break;
       case 'power':
         if (value > 0) {
             if(this.isDimmer) {
                 this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
             } else {
-              this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
+                this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
+                this.status = 100;
             }
         }
         else {
           this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
+          this.status = 0;
         }
         break;
       case 'brightness':
         this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
+        this.status = value;
         break;
     }//.bind(this));
   },
@@ -209,6 +213,8 @@ LightWaveRFAccessory.prototype = {
 	.on('get', function(callback) { that.getState("brightness", callback);})
 	.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
     .value = this.extractValue("brightness", this.status);
+    lightbulbService.getCharacteristic(Characteristic.Brightness)
+      .setProps({ minStep: 5 })
 
 	var informationService = new Service.AccessoryInformation();
 
