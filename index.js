@@ -168,7 +168,7 @@ LightWaveRFAccessory.prototype = {
             if(callback) callback();
         }
             
-        that.getState("power", callback);
+        this.getState("power", callback);
             
         break;
     }//.bind(this));
