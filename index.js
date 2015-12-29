@@ -61,6 +61,11 @@ function LightWaveRFAccessory(log, device, api) {
   this.log = log;
 }
 
+function onErr(err) {
+    console.log(err);
+    return 1;
+}
+
 LightWaveRFPlatform.prototype = {
 
   accessories: function(callback) {
@@ -73,18 +78,13 @@ LightWaveRFPlatform.prototype = {
           var prompt = require('prompt');
           prompt.start();
           prompt.get(['email', 'pin'], function (err, result) {
-            if (err) { return onErr(err); }
+            if (err) { return this.onErr(err); }
             console.log('Command-line input received:');
             config.email = result.email;
             config.pin = result.pin;
             //console.log('  Email: ' + result.email);
             //console.log('  Pin: ' + result.pin);
             });
-        
-          function onErr(err) {
-            console.log(err);
-            return 1;
-          }
       }
       
         if(!config.pin) {
@@ -92,16 +92,11 @@ LightWaveRFPlatform.prototype = {
             var prompt = require('prompt');
             prompt.start();
             prompt.get(['pin'], function (err, result) {
-                       if (err) { return onErr(err); }
+                       if (err) { return this.onErr(err); }
                        console.log('Command-line input received:');
                        config.pin = result.pin;
                        //console.log('  Pin: ' + result.pin);
-                       });
-            
-            function onErr(err) {
-                console.log(err);
-                return 1;
-            }
+                       });            
         }
         
       var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin});
