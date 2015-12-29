@@ -99,18 +99,18 @@ LightWaveRFPlatform.prototype = {
                        });
         }
         
-      var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin});
+        var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin}, function(devices) {
       
-      var foundAccessories = [];
-      that.log("Adding devices to homebridge");
-      for(var i=0;i<api.devices.length;++i) {
-          that.log("Adding devices to homebridge");
-          var device = api.devices[i];
-          var accessory = new LightWaveRFAccessory(that.log, device, api);
-          foundAccessories.push(accessory);
-      }
-        
-      callback(foundAccessories);
+            var foundAccessories = [];
+            that.log("Adding devices to homebridge");
+            for(var i=0;i<devices.length;++i) {
+                that.log("Adding devices to homebridge");
+                var device = api.devices[i];
+                var accessory = new LightWaveRFAccessory(that.log, device, api);
+                foundAccessories.push(accessory);
+            }
+            that.callback(foundAccessories);
+        }
 
     };
       
