@@ -159,8 +159,11 @@ LightWaveRFAccessory.prototype = {
         }
         break;
       case 'brightness':
-        this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
-        this.status = value;
+        // Only write when change is larger than 5
+        if(Math.abs(this.status-value) >=5) {
+            this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
+            this.status = value;
+        }
         break;
     }//.bind(this));
   },
