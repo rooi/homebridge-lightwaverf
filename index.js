@@ -147,7 +147,7 @@ LightWaveRFAccessory.prototype = {
       case 'power':
         if (value > 0) {
             if(this.isDimmer) {
-                if(this.status == < 5 ) this.status = 100;
+                if(this.status < 5 ) this.status = 100;
                 this.api.setDeviceDim(this.roomId,this.deviceId,this.status,callback);
             } else {
                 this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
