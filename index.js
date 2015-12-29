@@ -202,13 +202,13 @@ LightWaveRFAccessory.prototype = {
 	.getCharacteristic(Characteristic.On)
 	.on('get', function(callback) { that.getState("power", callback);})
 	.on('set', function(value, callback) { that.executeChange("power", value, callback);})
-    .value = this.extractValue("power", this.device);
+    .value = this.extractValue("power", this.status);
 
 	lightbulbService
 	.addCharacteristic(Characteristic.Brightness)
 	.on('get', function(callback) { that.getState("brightness", callback);})
-	//.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
-    .value = this.extractValue("brightness", this.device);
+	.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
+    .value = this.extractValue("brightness", this.status);
 
 	var informationService = new Service.AccessoryInformation();
 
