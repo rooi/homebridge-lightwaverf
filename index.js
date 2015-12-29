@@ -98,7 +98,7 @@ LightWaveRFPlatform.prototype = {
                        //console.log('  Pin: ' + result.pin);
                        });
         }
-        /*
+        
         var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin}, function(devices) {
       
             var foundAccessories = [];
@@ -108,7 +108,7 @@ LightWaveRFPlatform.prototype = {
                 foundAccessories.push(accessory);
             }
             callback(foundAccessories);
-        });*/
+        });
 
     };
       
