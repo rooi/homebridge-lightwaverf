@@ -43,6 +43,7 @@ function LightWaveRFPlatform(log, config) {
   this.log = log;
   this.ip_address = config["ip_address"];
   this.email = config["email"];
+  this.pin = config["pin"];
   
   this.log("LightWaveRF Platform Plugin Version " + this.getVersion());
   
@@ -66,10 +67,45 @@ LightWaveRFPlatform.prototype = {
     this.log("Fetching LightWaveRF switches and dimmers...");
     var that = this;
     var getLights = function () {
-      that.log("Creating lightwaverf with ip:" + that.ip_address + ", email:" + that.email + ", pin:" + that.pin);
+        
+      if(!config.email) {
+          // Get email
+          var prompt = require('prompt');
+          prompt.start();
+          prompt.get(['email', 'pin'], function (err, result) {
+            if (err) { return onErr(err); }
+            console.log('Command-line input received:');
+            config.email = result.email;
+            config.pin = result.pin;
+            //console.log('  Email: ' + result.email);
+            //console.log('  Pin: ' + result.pin);
+            });
+        
+          function onErr(err) {
+            console.log(err);
+            return 1;
+          }
+      }
+      
+        if(!config.pin) {
+            // Get email
+            var prompt = require('prompt');
+            prompt.start();
+            prompt.get(['pin'], function (err, result) {
+                       if (err) { return onErr(err); }
+                       console.log('Command-line input received:');
+                       config.pin = result.pin;
+                       //console.log('  Pin: ' + result.pin);
+                       });
+            
+            function onErr(err) {
+                console.log(err);
+                return 1;
+            }
+        }
+        
       var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin});
-      that.log("Finished creating lightwaverf");
-
+      
       var foundAccessories = [];
       for(var i=0;i<api.devices.length;i++) {
           var device = api.devices[i];
