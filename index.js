@@ -73,30 +73,30 @@ LightWaveRFPlatform.prototype = {
     var that = this;
     var getLights = function () {
         
-      if(!config.email) {
+      if(!that.email) {
           // Get email
           var prompt = require('prompt');
           prompt.start();
           prompt.get(['email', 'pin'], function (err, result) {
             if (err) { return this.onErr(err); }
             console.log('Command-line input received:');
-            config.email = result.email;
-            config.pin = result.pin;
+            that.email = result.email;
+            that.pin = result.pin;
             //console.log('  Email: ' + result.email);
             //console.log('  Pin: ' + result.pin);
             });
       }
       
-        if(!config.pin) {
+        if(!that.pin) {
             // Get email
             var prompt = require('prompt');
             prompt.start();
             prompt.get(['pin'], function (err, result) {
                        if (err) { return this.onErr(err); }
                        console.log('Command-line input received:');
-                       config.pin = result.pin;
+                       that.pin = result.pin;
                        //console.log('  Pin: ' + result.pin);
-                       });            
+                       });
         }
         
       var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin});
