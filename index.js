@@ -160,7 +160,7 @@ LightWaveRFAccessory.prototype = {
         break;
       case 'brightness':
         // Only write when change is larger than 5
-        if((value % 5) > 0) {
+        if((value % 5) == 0) {
             this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
         }
         this.status = value;
