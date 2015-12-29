@@ -102,9 +102,9 @@ LightWaveRFPlatform.prototype = {
       var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin});
       
       var foundAccessories = [];
-      this.log("Adding devices to homebridge");
+      that.log("Adding devices to homebridge");
       for(var i=0;i<api.devices.length;++i) {
-          this.log("Adding devices to homebridge");
+          that.log("Adding devices to homebridge");
           var device = api.devices[i];
           var accessory = new LightWaveRFAccessory(that.log, device, api);
           foundAccessories.push(accessory);
