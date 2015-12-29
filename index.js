@@ -176,12 +176,12 @@ LightWaveRFAccessory.prototype = {
         callback(null, newValue);
       } else {
         //  this.log("Device " + that.device.name + " does not support reading characteristic " + characteristic);
-        //  callback(Error("Device " + that.device.name + " does not support reading characteristic " + characteristic) );
+          callback(Error("Device " + that.device.name + " does not support reading characteristic " + characteristic) );
       }
 
       callback = null;
 		
-      //this.log("Get " + that.device.name + ", characteristic: " + characteristic + ", value: " + value + ".");
+      this.log("Get " + that.device.name + ", characteristic: " + characteristic + ", value: " + value + ".");
     }
   },
 
