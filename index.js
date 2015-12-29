@@ -214,7 +214,7 @@ LightWaveRFAccessory.prototype = {
 	.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
     .value = this.extractValue("brightness", this.status);
     lightbulbService.getCharacteristic(Characteristic.Brightness)
-      .setProps({ minStep: 5 })
+      .setProps({ designedMinStep: 5 })
 
 	var informationService = new Service.AccessoryInformation();
 
