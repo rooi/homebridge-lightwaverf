@@ -196,6 +196,7 @@ LightWaveRFAccessory.prototype = {
     
     // Use HomeKit types defined in HAP node JS
 	var lightbulbService = new Service.Lightbulb(this.name);
+    console.log("Adding lightbulbService " + this.name);
 
 	// Basic light controls, common to Hue and Hue lux
 	lightbulbService
