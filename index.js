@@ -162,8 +162,10 @@ LightWaveRFAccessory.prototype = {
         // Only write when change is larger than 5
         if((value % 5) == 0) {
             this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
+        } else {
+            this.status = value;
+            if(callback) callback;
         }
-        this.status = value;
         break;
     }//.bind(this));
   },
