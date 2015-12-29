@@ -167,6 +167,7 @@ LightWaveRFAccessory.prototype = {
             this.status = value;
             if(callback) callback();
         }
+            
         break;
     }//.bind(this));
   },
@@ -210,8 +211,8 @@ LightWaveRFAccessory.prototype = {
 	// Basic light controls, common to Hue and Hue lux
 	lightbulbService
 	.getCharacteristic(Characteristic.On)
-	.on('get', function(callback) { that.getState("power", callback);})
-	.on('set', function(value, callback) { that.executeChange("power", value, callback);})
+	.on('get', function(callbackOn) { that.getState("power", callbackOn);})
+	.on('set', function(value, callbackOn) { that.executeChange("power", value, callbackOn);})
     .value = this.extractValue("power", this.status);
 
 	lightbulbService
