@@ -215,9 +215,9 @@ LightWaveRFAccessory.prototype = {
 
 	informationService
 		.setCharacteristic(Characteristic.Manufacturer, "LightWaveRF")
-		.setCharacteristic(Characteristic.Model, this.model)
-		.setCharacteristic(Characteristic.SerialNumber, this.device.uniqueid)
-		.addCharacteristic(Characteristic.FirmwareRevision, this.device.swversion);
+		.setCharacteristic(Characteristic.Model, "ICS-1000")
+		.setCharacteristic(Characteristic.SerialNumber, "A1S2NASF88EW")//this.device.uniqueid)
+		.addCharacteristic(Characteristic.FirmwareRevision, "0.0.1");
 
 	return [informationService, lightbulbService];
   }
