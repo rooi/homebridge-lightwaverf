@@ -140,23 +140,23 @@ LightWaveRFAccessory.prototype = {
     switch(characteristic.toLowerCase()) {
       case 'identify':
         // Turn on twice to let the light blink
-        api.turnDeviceOn(this.roomId,this.deviceId,callback);
-        api.turnDeviceOn(this.roomId,this.deviceId,callback);
+        this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
+        this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
         break;
       case 'power':
         if (value > 0) {
             if(this.isDimmer) {
-                api.setDeviceDim(this.roomId,this.deviceId,value,callback);
+                this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
             } else {
-              api.turnDeviceOn(this.roomId,this.deviceId,callback);
+              this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
             }
         }
         else {
-          api.turnDeviceOff(this.roomId,this.deviceId,callback);
+          this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
         }
         break;
       case 'brightness':
-        api.setDeviceDim(this.roomId,this.deviceId,value,callback);
+        this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
         break;
     }//.bind(this));
   },
