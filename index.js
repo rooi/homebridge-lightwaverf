@@ -164,7 +164,7 @@ LightWaveRFAccessory.prototype = {
             this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
         } else {
             this.status = value;
-            if(callback) callback;
+            if(callback) return callback;
         }
         break;
     }//.bind(this));
