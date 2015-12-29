@@ -193,7 +193,7 @@ LightWaveRFAccessory.prototype = {
   // Get Services
   getServices: function() {
     var that = this;
-/*
+
     // Use HomeKit types defined in HAP node JS
 	var lightbulbService = new Service.Lightbulb(this.name);
 
@@ -209,7 +209,7 @@ LightWaveRFAccessory.prototype = {
 	.on('get', function(callback) { that.getState("brightness", callback);})
 	.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
     .value = this.extractValue("brightness", this.device);
-*/
+
 	var informationService = new Service.AccessoryInformation();
 
 	informationService
@@ -218,6 +218,6 @@ LightWaveRFAccessory.prototype = {
 		.setCharacteristic(Characteristic.SerialNumber, "A1S2NASF88EW" + this.roomId + this.deviceId)//this.device.uniqueid)
 		.addCharacteristic(Characteristic.FirmwareRevision, "0.0.1");
 
-    return [informationService];//, lightbulbService];
+    return [informationService, lightbulbService];
   }
 };
