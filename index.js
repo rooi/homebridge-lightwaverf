@@ -55,7 +55,7 @@ function LightWaveRFAccessory(log, device, api) {
   this.deviceId = device.deviceId;
   this.name = device.deviceName;
   this.device = device;
-  this.isDimmer = (device.deviceTyp == 'D');
+  this.isDimmer = (device.deviceType == 'D');
   this.status = 0; // 0 = off, else on / percentage
   this.api = api;
   this.log = log;
@@ -147,7 +147,8 @@ LightWaveRFAccessory.prototype = {
       case 'power':
         if (value > 0) {
             if(this.isDimmer) {
-                this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
+                if(this.status == < 5 ) this.status = 100;
+                this.api.setDeviceDim(this.roomId,this.deviceId,this.status,callback);
             } else {
                 this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
                 this.status = 100;
