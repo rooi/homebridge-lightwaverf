@@ -110,7 +110,7 @@ LightWaveRFPlatform.prototype = {
                 foundAccessories.push(accessory);
             }
             that.callback(foundAccessories);
-        }
+        });
 
     };
       
