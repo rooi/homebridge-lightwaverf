@@ -1,5 +1,6 @@
 # homebridge-lightwaverf
 LightWaveRF plugin for homebridge: https://github.com/nfarina/homebridge
+Note: This plugin communicates with the KlikAanKlikUit ICS-1000 or Lightwave Link
 
 # Installation
 
