@@ -44,6 +44,8 @@ function LightWaveRFPlatform(log, config) {
   this.ip_address = config["ip_address"];
   this.email = config["email"];
   this.pin = config["pin"];
+  this.host = "web.trustsmartcloud.com";
+  if(config["manager_host"]) this.host = config["manager_host"];
   
   this.log("LightWaveRF Platform Plugin Version " + this.getVersion());
   
@@ -99,7 +101,7 @@ LightWaveRFPlatform.prototype = {
                        });
         }
         
-        var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin}, function(devices) {
+        var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host}, function(devices) {
       
             var foundAccessories = [];
             for(var i=0;i<devices.length;++i) {
