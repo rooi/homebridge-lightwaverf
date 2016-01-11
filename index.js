@@ -59,6 +59,7 @@ function LightWaveRFAccessory(log, device, api) {
   this.device = device;
   this.isDimmer = (device.deviceType == 'D');
   this.status = 0; // 0 = off, else on / percentage
+  this.previousStatus;
   this.api = api;
   this.log = log;
 }
@@ -139,6 +140,7 @@ LightWaveRFAccessory.prototype = {
     
   // Create and set a light state
   executeChange: function(characteristic, value, callback) {
+    this.previousStatus = this.status;
     switch(characteristic.toLowerCase()) {
       case 'identify':
         // Turn on twice to let the light blink
@@ -149,8 +151,8 @@ LightWaveRFAccessory.prototype = {
       case 'power':
         if (value > 0) {
             if(this.isDimmer) {
-                if(this.status < 5 ) this.status = 100;
-                this.api.setDeviceDim(this.roomId,this.deviceId,this.status,callback);
+                if(this.previousStatus < 5 ) this.previousStatus = 100; // Prevent very low last states
+                this.api.setDeviceDim(this.roomId,this.deviceId,this.previousStatus,callback);
             } else {
                 this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
                 this.status = 100;
@@ -223,7 +225,7 @@ LightWaveRFAccessory.prototype = {
 	.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
     .value = this.extractValue("brightness", this.status);
     lightbulbService.getCharacteristic(Characteristic.Brightness)
-      .setProps({ designedMinStep: 5 })
+      .setProps({ minStep: 5 })
 
 	var informationService = new Service.AccessoryInformation();
 
