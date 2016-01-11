@@ -58,6 +58,7 @@ function LightWaveRFAccessory(log, device, api) {
   this.name = device.deviceName;
   this.device = device;
   this.isDimmer = (device.deviceType.indexOf('D') > -1);
+    this.log(device.deviceType);
   this.status = 0; // 0 = off, else on / percentage
   this.previousPercentage = 0;
   this.api = api;
