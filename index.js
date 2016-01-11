@@ -153,7 +153,7 @@ LightWaveRFAccessory.prototype = {
             if(this.isDimmer) {
                 if(this.previousStatus < 5 ) this.previousStatus = 100; // Prevent very low last states
                 this.api.setDeviceDim(this.roomId,this.deviceId,this.previousStatus,callback);
-                this.status = previousStatus;
+                this.status = this.previousStatus;
             } else {
                 this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
                 this.status = 100;
