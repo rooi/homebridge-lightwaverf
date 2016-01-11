@@ -57,9 +57,9 @@ function LightWaveRFAccessory(log, device, api) {
   this.deviceId = device.deviceId;
   this.name = device.deviceName;
   this.device = device;
-  this.isDimmer = (device.deviceType == 'D');
+  this.isDimmer = (device.deviceType.indexOf('D') > -1);
   this.status = 0; // 0 = off, else on / percentage
-  this.previousStatus;
+  this.previousPercentage = 0;
   this.api = api;
   this.log = log;
 }
@@ -140,7 +140,6 @@ LightWaveRFAccessory.prototype = {
     
   // Create and set a light state
   executeChange: function(characteristic, value, callback) {
-    this.previousStatus = this.status;
     switch(characteristic.toLowerCase()) {
       case 'identify':
         // Turn on twice to let the light blink
@@ -151,9 +150,10 @@ LightWaveRFAccessory.prototype = {
       case 'power':
         if (value > 0) {
             if(this.isDimmer) {
-                if(this.previousStatus < 5 ) this.previousStatus = 100; // Prevent very low last states
-                this.api.setDeviceDim(this.roomId,this.deviceId,this.previousStatus,callback);
-                this.status = this.previousStatus;
+                this.previousPercentage = this.status;
+                if(this.previousPercentage < 5 ) this.previousPercentage = 100; // Prevent very low last states
+                this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
+                this.status = this.previousPercentage;
             } else {
                 this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
                 this.status = 100;
@@ -165,6 +165,7 @@ LightWaveRFAccessory.prototype = {
         }
         break;
       case 'brightness':
+        this.previousPercentage = this.status;
         // Only write when change is larger than 5
         this.status = value;
         if((value % 5) == 0) {
