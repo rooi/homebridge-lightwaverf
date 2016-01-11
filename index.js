@@ -62,7 +62,7 @@ function LightWaveRFAccessory(log, device, api) {
   this.previousPercentage = 0;
   this.api = api;
   this.log = log;
-this.log(device.deviceType);
+this.log(this.isDimmer);
 }
 
 function onErr(err) {
