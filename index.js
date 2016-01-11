@@ -165,15 +165,15 @@ LightWaveRFAccessory.prototype = {
         break;
       case 'brightness':
         // Only write when change is larger than 5
+        this.status = value;
         if((value % 5) == 0) {
             this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
         } else {
-            this.status = value;
             if(callback) callback();
         }
             
         break;
-    }.bind(this));
+    }//.bind(this));
   },
 
 
@@ -197,7 +197,7 @@ LightWaveRFAccessory.prototype = {
       callback = null;
 		
       //this.log("Get " + that.device.name + ", characteristic: " + characteristic + ", value: " + value + ".");
-    }.bind(this));
+    }//.bind(this));
   },
 
   // Respond to identify request
