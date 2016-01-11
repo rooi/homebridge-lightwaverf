@@ -173,7 +173,7 @@ LightWaveRFAccessory.prototype = {
         }
             
         break;
-    }//.bind(this));
+    }.bind(this));
   },
 
 
@@ -197,7 +197,7 @@ LightWaveRFAccessory.prototype = {
       callback = null;
 		
       //this.log("Get " + that.device.name + ", characteristic: " + characteristic + ", value: " + value + ".");
-    }//.bind(this));
+    }.bind(this));
   },
 
   // Respond to identify request
