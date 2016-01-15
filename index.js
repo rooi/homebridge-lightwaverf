@@ -150,7 +150,6 @@ LightWaveRFAccessory.prototype = {
       case 'power':
         if (value > 0) {
             if(this.isDimmer) {
-                console.log(this.previousPercentage);
                 if(this.previousPercentage < 5 ) this.previousPercentage = 100; // Prevent very low last states
                 console.log(this.previousPercentage);
                 this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
@@ -168,7 +167,6 @@ LightWaveRFAccessory.prototype = {
         break;
       case 'brightness':
         this.previousPercentage = this.status;
-        console.log(this.previousPercentage);
         // Only write when change is larger than 5
         this.status = value;
         if((value % 5) == 0) {
