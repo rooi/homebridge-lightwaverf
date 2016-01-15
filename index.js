@@ -62,7 +62,6 @@ function LightWaveRFAccessory(log, device, api) {
   this.previousPercentage = 0;
   this.api = api;
   this.log = log;
-this.log(this.isDimmer);
 }
 
 function onErr(err) {
@@ -152,7 +151,7 @@ LightWaveRFAccessory.prototype = {
         if (value > 0) {
             if(this.isDimmer) {
                 this.previousPercentage = this.status;
-                if(this.previousPercentage < 5 ) this.previousPercentage = 100; // Prevent very low last states
+                //if(this.previousPercentage < 5 ) this.previousPercentage = 100; // Prevent very low last states
                 this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
                 this.status = this.previousPercentage;
             } else {
