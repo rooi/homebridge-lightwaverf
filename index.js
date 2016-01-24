@@ -55,7 +55,7 @@ function LightWaveRFPlatform(log, config) {
 function LightWaveRFAccessory(log, device, api) {
   this.roomId = device.roomId;
   this.deviceId = device.deviceId;
-  this.name = device.deviceName;
+  this.name = device. roomName + " " + device.deviceName;
   this.device = device;
   this.isDimmer = (device.deviceType.indexOf('D') > -1);
   this.status = 0; // 0 = off, else on / percentage
