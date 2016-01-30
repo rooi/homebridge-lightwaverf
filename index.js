@@ -143,17 +143,14 @@ LightWaveRFAccessory.prototype = {
     switch(characteristic.toLowerCase()) {
       case 'identify':
         // Turn on twice to let the light blink
-        if(value > 0) {
-            var that = this;
-            this.api.turnDeviceOn(this.roomId,this.deviceId);
-            this.api.turnDeviceOn(this.roomId,this.deviceId);
-            setTimeout(function (callback) {
-                that.api.turnDeviceOff(that.roomId,that.deviceId,callback);
-            }, 2000);
-        }
-        else {
-            if(callback) callback();
-        }
+        this.api.turnDeviceOn(this.roomId,this.deviceId);
+        this.api.turnDeviceOn(this.roomId,this.deviceId);
+        
+        var that = this;
+        setTimeout(function () {
+            that.api.turnDeviceOn(that.roomId,that.deviceId);
+        }, 2000);
+        if(callback) callback();
         break;
       case 'power':
         if (value > 0) {
@@ -212,7 +209,8 @@ LightWaveRFAccessory.prototype = {
 
   // Respond to identify request
   identify: function(callback) { 
-  	this.executeChange("identify", true, callback); 
+  	this.executeChange("identify");
+    callback();
   },
 
   // Get Services
