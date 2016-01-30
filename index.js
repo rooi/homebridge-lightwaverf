@@ -148,7 +148,7 @@ LightWaveRFAccessory.prototype = {
             this.api.turnDeviceOn(this.roomId,this.deviceId);
             setTimeout(function () {
                 this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
-            }, 2000);
+            }, 2000).bind(this);
         }
         break;
       case 'power':
