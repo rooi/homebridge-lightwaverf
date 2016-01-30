@@ -143,8 +143,8 @@ LightWaveRFAccessory.prototype = {
     switch(characteristic.toLowerCase()) {
       case 'identify':
         // Turn on twice to let the light blink
-        if(this.status == 0) this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
-        this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
+        if(this.status == 0) this.api.turnDeviceOn(this.roomId,this.deviceId);
+        this.api.turnDeviceOn(this.roomId,this.deviceId);
         this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
         break;
       case 'power':
