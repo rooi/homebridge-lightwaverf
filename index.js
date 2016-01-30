@@ -151,6 +151,9 @@ LightWaveRFAccessory.prototype = {
                 that.api.turnDeviceOff(that.roomId,that.deviceId,callback);
             }, 2000);
         }
+        else {
+            if(callback) callback();
+        }
         break;
       case 'power':
         if (value > 0) {
