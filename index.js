@@ -144,12 +144,14 @@ LightWaveRFAccessory.prototype = {
       case 'identify':
         // Turn on twice to let the light blink
         this.api.turnDeviceOn(this.roomId,this.deviceId);
-        this.api.turnDeviceOn(this.roomId,this.deviceId);
         
         var that = this;
         setTimeout(function () {
             that.api.turnDeviceOn(that.roomId,that.deviceId);
-        }, 2000);
+        }, 1000);
+        setTimeout(function () {
+            that.api.turnDeviceOn(that.roomId,that.deviceId);
+        }, 3000);
         if(callback) callback();
         break;
       case 'power':
