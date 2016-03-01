@@ -179,6 +179,9 @@ LightWaveRFAccessory.prototype = {
         // Only write when change is larger than 5
         this.status = value;
         if((value % 5) == 0) {
+            if(value > 0 && this.lightbulbService && this.lightbulbService.getCharacteristic(Characteristic.On)) {
+                this.lightbulbService.getCharacteristic(Characteristic.On).setValue(true);
+            }
             this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
         } else {
             if(callback) callback();
@@ -239,6 +242,8 @@ LightWaveRFAccessory.prototype = {
     .value = this.extractValue("brightness", this.status);
     lightbulbService.getCharacteristic(Characteristic.Brightness)
       .setProps({ minStep: 5 })
+      
+    this.lightbulbService = lightbulbService;
 
 	var informationService = new Service.AccessoryInformation();
 
