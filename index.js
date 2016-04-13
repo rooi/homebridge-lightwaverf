@@ -160,7 +160,7 @@ LightWaveRFAccessory.prototype = {
       case 'power':
         if (value > 0) {
             if(this.isDimmer) {
-                if(this.previousPercentage < 5 ) this.previousPercentage = 100; // Prevent very low last states
+                if(this.previousPercentage < 3.125 ) this.previousPercentage = 100; // Prevent very low last states
                 this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
                 this.status = this.previousPercentage;
             } else {
@@ -178,14 +178,14 @@ LightWaveRFAccessory.prototype = {
         this.previousPercentage = this.status;
         // Only write when change is larger than 5
         this.status = value;
-        if((value % 5) == 0) {
+        //if((value % 5) == 0) {
             if(value > 0 && this.lightbulbService && !this.lightbulbService.getCharacteristic(Characteristic.On)) {
                 this.lightbulbService.getCharacteristic(Characteristic.On).setValue(true);
             }
             this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
-        } else {
-            if(callback) callback();
-        }
+        //} else {
+        //    if(callback) callback();
+        //}
             
         break;
     }//.bind(this));
@@ -241,7 +241,7 @@ LightWaveRFAccessory.prototype = {
 	.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
     .value = this.extractValue("brightness", this.status);
     lightbulbService.getCharacteristic(Characteristic.Brightness)
-      .setProps({ minStep: 5 })
+      .setProps({ minStep: 1 })
       
     this.lightbulbService = lightbulbService;
 
