@@ -42,9 +42,13 @@ module.exports = function(homebridge) {
 function LightWaveRFPlatform(log, config) {
   this.log = log;
   this.ip_address = config["ip_address"];
+    
   this.email = config["email"];
   this.pin = config["pin"];
   this.host = "web.trustsmartcloud.com";
+    
+  this.devices = config["devices"];
+    
   if(config["manager_host"]) this.host = config["manager_host"];
   
   this.log("LightWaveRF Platform Plugin Version " + this.getVersion());
@@ -75,43 +79,62 @@ LightWaveRFPlatform.prototype = {
     this.log("Fetching LightWaveRF switches and dimmers...");
     var that = this;
     var getLights = function () {
+      
+      // Use config for devices
+      if(that.devices) {
+          var api = new lightwaverf({ip:that.ip_address});
+          
+          var foundAccessories = [];
+          for(var i=0;i<that.devices.length;++i) {
+              var device = that.devices[i];
+              console.log("device = ");
+              console.log(device);
+              var accessory = new LightWaveRFAccessory(that.log, device, api);
+              foundAccessories.push(accessory);
+          }
+          callback(foundAccessories);
+      }
+      else { // use website
         
-      if(!that.email) {
-          // Get email
-          var prompt = require('prompt');
-          prompt.start();
-          prompt.get(['email', 'pin'], function (err, result) {
-            if (err) { return this.onErr(err); }
-            console.log('Command-line input received:');
-            that.email = result.email;
-            that.pin = result.pin;
-            //console.log('  Email: ' + result.email);
-            //console.log('  Pin: ' + result.pin);
+          if(!that.email) {
+              // Get email
+              var prompt = require('prompt');
+              prompt.start();
+              prompt.get(['email', 'pin'], function (err, result) {
+                if (err) { return this.onErr(err); }
+                console.log('Command-line input received:');
+                that.email = result.email;
+                that.pin = result.pin;
+                //console.log('  Email: ' + result.email);
+                //console.log('  Pin: ' + result.pin);
+                });
+          }
+          
+            if(!that.pin) {
+                // Get email
+                var prompt = require('prompt');
+                prompt.start();
+                prompt.get(['pin'], function (err, result) {
+                           if (err) { return this.onErr(err); }
+                           console.log('Command-line input received:');
+                           that.pin = result.pin;
+                           //console.log('  Pin: ' + result.pin);
+                           });
+            }
+            
+            var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host}, function(devices) {
+          
+                var foundAccessories = [];
+                for(var i=0;i<devices.length;++i) {
+                    var device = api.devices[i];
+                    console.log("device = ");
+                    console.log(device);
+                    var accessory = new LightWaveRFAccessory(that.log, device, api);
+                    foundAccessories.push(accessory);
+                }
+                callback(foundAccessories);
             });
       }
-      
-        if(!that.pin) {
-            // Get email
-            var prompt = require('prompt');
-            prompt.start();
-            prompt.get(['pin'], function (err, result) {
-                       if (err) { return this.onErr(err); }
-                       console.log('Command-line input received:');
-                       that.pin = result.pin;
-                       //console.log('  Pin: ' + result.pin);
-                       });
-        }
-        
-        var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host}, function(devices) {
-      
-            var foundAccessories = [];
-            for(var i=0;i<devices.length;++i) {
-                var device = api.devices[i];
-                var accessory = new LightWaveRFAccessory(that.log, device, api);
-                foundAccessories.push(accessory);
-            }
-            callback(foundAccessories);
-        });
 
     };
       
