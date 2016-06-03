@@ -61,3 +61,8 @@ following syntac:
         }
 ]
 ```
+
+The following devices are supported:
+- Light: "deviceType": "L"
+- Dimmeble Light: "deviceType": "D"
+- Switch: "deviceType": "S"

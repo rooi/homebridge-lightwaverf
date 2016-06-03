@@ -62,6 +62,8 @@ function LightWaveRFAccessory(log, device, api) {
   this.name = device. roomName + " " + device.deviceName;
   this.device = device;
   this.isDimmer = (device.deviceType.indexOf('D') > -1);
+  this.isLight = (device.deviceType.indexOf('L') > -1) || this.isDimmer;
+  this.isSwitch = (device.deviceType.indexOf('S') > -1)
   this.status = 0; // 0 = off, else on / percentage
   this.previousPercentage = 0;
   this.api = api;
@@ -248,25 +250,45 @@ LightWaveRFAccessory.prototype = {
   getServices: function() {
     var that = this;
 
-    // Use HomeKit types defined in HAP node JS
-	var lightbulbService = new Service.Lightbulb(this.name);
-
-	// Basic light controls, common to Hue and Hue lux
-	lightbulbService
-	.getCharacteristic(Characteristic.On)
-	.on('get', function(callback) { that.getState("power", callback);})
-	.on('set', function(value, callback) { that.executeChange("power", value, callback);})
-    .value = this.extractValue("power", this.status);
-
-	lightbulbService
-	.addCharacteristic(Characteristic.Brightness)
-	.on('get', function(callback) { that.getState("brightness", callback);})
-	.on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
-    .value = this.extractValue("brightness", this.status);
-    lightbulbService.getCharacteristic(Characteristic.Brightness)
-      .setProps({ minStep: 1 })
+    this.lightbulbService = 0;
+    this.switchService = 0;
       
-    this.lightbulbService = lightbulbService;
+    if(this.isLight ) {
+        // Use HomeKit types defined in HAP node JS
+        var lightbulbService = new Service.Lightbulb(this.name);
+
+        // Basic light controls, common to Hue and Hue lux
+        lightbulbService
+        .getCharacteristic(Characteristic.On)
+        .on('get', function(callback) { that.getState("power", callback);})
+        .on('set', function(value, callback) { that.executeChange("power", value, callback);})
+        .value = this.extractValue("power", this.status);
+
+        if(this.isDimmer) {
+            lightbulbService
+            .addCharacteristic(Characteristic.Brightness)
+            .on('get', function(callback) { that.getState("brightness", callback);})
+            .on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
+            .value = this.extractValue("brightness", this.status);
+            lightbulbService.getCharacteristic(Characteristic.Brightness)
+              .setProps({ minStep: 1 })
+        }
+        
+        this.lightbulbService = lightbulbService;
+    }
+    else if(this.isSwitch) {
+        // Use HomeKit types defined in HAP node JS
+        var switchService = new Service.Switch(this.name);
+        
+        // Basic light controls, common to Hue and Hue lux
+        switchService
+        .getCharacteristic(Characteristic.On)
+        .on('get', function(callback) { that.getState("power", callback);})
+        .on('set', function(value, callback) { that.executeChange("power", value, callback);})
+        .value = this.extractValue("power", this.status);
+        
+        this.switchService = switchService;
+    }
 
 	var informationService = new Service.AccessoryInformation();
 
@@ -276,6 +298,8 @@ LightWaveRFAccessory.prototype = {
 		.setCharacteristic(Characteristic.SerialNumber, "A1S2NASF88EW" + this.roomId + this.deviceId)//this.device.uniqueid)
 		.addCharacteristic(Characteristic.FirmwareRevision, "0.0.1");
 
-    return [informationService, lightbulbService];
+    if(this.lightbulbService) return [informationService, this.lightbulbService];
+    else if(this.switchService) return [informationService, this.switchService];
+    else return [informationService];
   }
 };
