@@ -66,3 +66,29 @@ The following devices are supported:
 - Light: "deviceType": "L"
 - Dimmeble Light: "deviceType": "D"
 - Switch: "deviceType": "S"
+
+# How to Determine Room Number:
+
+Log in to Manager.LightwaveRF.com
+View All Rooms
+Select the room in question
+Show Page Source
+Search in Page Source for "All Off" -The Required value is in the data-room_number= attribute of that line
+
+# How to Determine Device Number:
+
+Log in to Manager.LightwaveRF.com
+View All Rooms
+Select the room in question
+Device Number is usually the order in which the devices are listed, but this does not account for adding and removing devices. This may take some trial and error.
+
+# How to Register your HomeBridge server on Lightwave Link:
+
+For Mac OSX, (*nix, or rPi - can anyone verify?)
+in a Terminal Window, run echo -ne '100,!F*p.' | nc -u 192.168.yyy.xxx 9760 be sure to select the right IP address.
+Ctrl+C to close the Echo window
+For Windows PC
+
+Download PacketSender - https://packetsender.com/
+Send 100,!F*p. to the Lightwave Link on port 9760
+When the Lightwave Link starts flashing, press the Link button
