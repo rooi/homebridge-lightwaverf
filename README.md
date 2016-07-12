@@ -25,9 +25,9 @@ Configuration sample:
           "platform": "LightWaveRF",
           "name": "LightWaveRF",
           "ip_address": "192.168.1.123",
-          "manager_host": "lightwaverfhost.co.uk"
+          "manager_host": "lightwaverfhost.co.uk",
           "email": "name@host.com",
-          "pin: "1234"
+          "pin:" "1234"
         }   
     ]
 
@@ -84,7 +84,7 @@ Device Number is usually the order in which the devices are listed, but this doe
 
 # How to Register your HomeBridge server on Lightwave Link:
 
-For Mac OSX, (*nix, or rPi - can anyone verify?)
+For Mac OSX, (\*nix, or rPi - can anyone verify?)
 in a Terminal Window, run echo -ne '100,!F*p.' | nc -u 192.168.yyy.xxx 9760 be sure to select the right IP address.
 Ctrl+C to close the Echo window
 For Windows PC
