@@ -194,7 +194,7 @@ LightWaveRFAccessory.prototype = {
             }
         }
         else {
-          this.previousPercentage = 0;
+          //this.previousPercentage = 0;
           this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
           this.status = 0;
         }
