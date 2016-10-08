@@ -184,18 +184,17 @@ LightWaveRFAccessory.prototype = {
         break;
       case 'power':
         if (value > 0) {
-            this.log("called power = " + value);
             if(this.isDimmer) {
                 if(this.previousPercentage < 3.125 ) this.previousPercentage = 100; // Prevent very low last states
                 this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
-                this.status = this.previousPercentage;
+                //this.status = this.previousPercentage;
             } else {
                 this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
                 this.status = 100;
             }
         }
         else {
-          this.previousPercentage = this.status;
+          this.previousPercentage = 0;
           this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
           this.status = 0;
         }
