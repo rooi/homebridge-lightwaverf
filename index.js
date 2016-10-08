@@ -200,7 +200,7 @@ LightWaveRFAccessory.prototype = {
         }
         break;
       case 'brightness':
-        this.previousPercentage = this.status;
+        this.previousPercentage = value;
         // Only write when change is larger than 5
         this.status = value;
         //if((value % 5) == 0) {
