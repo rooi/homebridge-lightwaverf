@@ -63,11 +63,13 @@ function LightWaveRFAccessory(log, device, api) {
   this.device = device;
   this.isDimmer = (device.deviceType.indexOf('D') > -1);
   this.isLight = (device.deviceType.indexOf('L') > -1) || this.isDimmer;
-  this.isSwitch = (device.deviceType.indexOf('S') > -1 || device.deviceType.indexOf('O') > -1)
+  this.isSwitch = (device.deviceType.indexOf('S') > -1 || device.deviceType.indexOf('O') > -1);
+  this.isGarageDoor = (device.deviceType.indexOf('G') > -1);
   this.status = 0; // 0 = off, else on / percentage
   this.previousPercentage = 0;
   this.api = api;
   this.log = log;
+  this.timeOut = device.timeOut ? device.timeOut : 2;
 }
 
 function onErr(err) {
@@ -82,60 +84,48 @@ LightWaveRFPlatform.prototype = {
     var that = this;
     var getLights = function () {
       
-      // Use config for devices
-      if(that.devices) {
-          var api = new lightwaverf({ip:that.ip_address});
-          
-          var foundAccessories = [];
-          for(var i=0;i<that.devices.length;++i) {
-              var device = that.devices[i];
-              console.log("device = ");
-              console.log(device);
-              var accessory = new LightWaveRFAccessory(that.log, device, api);
-              foundAccessories.push(accessory);
-          }
-          callback(foundAccessories);
-      }
-      else { // use website
+      var foundAccessories = [];
         
-          if(!that.email) {
-              // Get email
-              var prompt = require('prompt');
-              prompt.start();
-              prompt.get(['email', 'pin'], function (err, result) {
-                if (err) { return this.onErr(err); }
-                console.log('Command-line input received:');
-                that.email = result.email;
-                that.pin = result.pin;
-                //console.log('  Email: ' + result.email);
-                //console.log('  Pin: ' + result.pin);
-                });
-          }
+      // use website
+      if(that.email && that.pin) {
           
-            if(!that.pin) {
-                // Get email
-                var prompt = require('prompt');
-                prompt.start();
-                prompt.get(['pin'], function (err, result) {
-                           if (err) { return this.onErr(err); }
-                           console.log('Command-line input received:');
-                           that.pin = result.pin;
-                           //console.log('  Pin: ' + result.pin);
-                           });
-            }
-            
-            var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host}, function(devices) {
-          
-                var foundAccessories = [];
-                for(var i=0;i<devices.length;++i) {
-                    var device = api.devices[i];
+          var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host}, function(devices) {
+                                    
+              // Add config for devices
+              if(that.devices) {
+                for(var i=0;i<that.devices.length;++i) {
+                    var device = that.devices[i];
                     console.log("device = ");
                     console.log(device);
                     var accessory = new LightWaveRFAccessory(that.log, device, api);
                     foundAccessories.push(accessory);
                 }
-                callback(foundAccessories);
-            });
+              }
+          
+              for(var i=0;i<devices.length;++i) {
+                  var device = api.devices[i];
+                  console.log("device = ");
+                  console.log(device);
+                  var accessory = new LightWaveRFAccessory(that.log, device, api);
+                  foundAccessories.push(accessory);
+              }
+              callback(foundAccessories);
+          }.bind(this));
+      }
+      else {
+          // Use config for devices
+          if(that.devices) {
+              var api = new lightwaverf({ip:that.ip_address});
+              
+              for(var i=0;i<that.devices.length;++i) {
+                  var device = that.devices[i];
+                  console.log("device = ");
+                  console.log(device);
+                  var accessory = new LightWaveRFAccessory(that.log, device, api);
+                  foundAccessories.push(accessory);
+              }
+              callback(foundAccessories);
+          }
       }
 
     };
@@ -157,6 +147,8 @@ LightWaveRFAccessory.prototype = {
       case 'power':
         return status > 0 ? 1 : 0;
       case 'brightness':
+        return status;
+      case 'door':
         return status;
       default:
         return null;
@@ -211,8 +203,35 @@ LightWaveRFAccessory.prototype = {
         //} else {
         //    if(callback) callback();
         //}
-            
         break;
+        case 'door':
+          if (value == Characteristic.TargetDoorState.CLOSED) {
+            if(this.isGarageDoor) {
+                this.api.closeDevice(this.roomId,this.deviceId,callback);
+                this.status = value;
+                
+                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.CLOSING);
+                
+                setTimeout(() => {
+                    if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.CLOSED);
+                    this.api.stopDevice(this.roomId,this.deviceId);
+                }, this.timeOut * 1000);
+            } else if(callback) callback(1,0);
+          }
+          else {
+            if(this.isGarageDoor) {
+              this.api.openDevice(this.roomId,this.deviceId,callback);
+              this.status = value;
+                
+              if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPENING);
+                
+              setTimeout(() => {
+                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPEN);
+                this.api.stopDevice(this.roomId,this.deviceId);
+              }, this.timeOut * 1000);
+            } else if(callback) callback(1,0);
+          }
+          break;
     }//.bind(this));
   },
 
@@ -224,14 +243,14 @@ LightWaveRFAccessory.prototype = {
     if (callback == null) {
       return;
     }
-      
     else {
       var newValue = this.extractValue(characteristic, this.status);
       if (newValue != undefined) {
         callback(null, newValue);
       } else {
-        //  this.log("Device " + that.device.name + " does not support reading characteristic " + characteristic);
+        this.log("Device " + that.device.name + " does not support reading characteristic " + characteristic);
         //  callback(Error("Device " + that.device.name + " does not support reading characteristic " + characteristic) );
+        callback(1,0);
       }
 
       callback = null;
@@ -289,6 +308,19 @@ LightWaveRFAccessory.prototype = {
         
         this.switchService = switchService;
     }
+    else if(this.isGarageDoor) {
+        // Use HomeKit types defined in HAP node JS
+        var openerService = new Service.GarageDoorOpener(this.name);
+        
+        // Basic light controls, common to Hue and Hue lux
+        openerService
+        .getCharacteristic(Characteristic.TargetDoorState)
+        .on('get', function(callback) { that.getState("door", callback);})
+        .on('set', function(value, callback) { that.executeChange("door", value, callback);})
+        .value = this.extractValue("door", this.status);
+        
+        this.openerService = openerService;
+    }
 
 	var informationService = new Service.AccessoryInformation();
 
@@ -300,6 +332,7 @@ LightWaveRFAccessory.prototype = {
 
     if(this.lightbulbService) return [informationService, this.lightbulbService];
     else if(this.switchService) return [informationService, this.switchService];
+    else if(this.openerService) return [informationService, this.openerService];
     else return [informationService];
   }
 };

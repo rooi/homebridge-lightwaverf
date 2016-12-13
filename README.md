@@ -56,6 +56,14 @@ following syntac:
                     "deviceId": 2,
                     "deviceName": "MyLight",
                     "deviceType": "D"
+                },
+                {
+                    "roomId": 1,
+                    "roomName": "LivingRoom",
+                    "deviceId": 3,
+                    "deviceName": "MyGarageDoor",
+                    "deviceType": "G",
+                    "timeOut": 10
                 }
             ]
         }
@@ -66,6 +74,7 @@ The following devices are supported:
 - Light: "deviceType": "L"
 - Dimmeble Light: "deviceType": "D"
 - Switch: "deviceType": "S"
+- GarageDoor: "deviceType": "G"
 
 # How to Determine Room Number:
 
