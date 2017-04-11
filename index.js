@@ -65,6 +65,7 @@ function LightWaveRFAccessory(log, device, api) {
   this.isLight = (device.deviceType.indexOf('L') > -1) || this.isDimmer;
   this.isSwitch = (device.deviceType.indexOf('S') > -1 || device.deviceType.indexOf('O') > -1);
   this.isGarageDoor = (device.deviceType.indexOf('G') > -1);
+  this.isWindowCovering = (device.deviceType.indexOf('WC') > -1);
   this.status = 0; // 0 = off, else on / percentage
   this.previousPercentage = 0;
   this.api = api;
@@ -216,7 +217,19 @@ LightWaveRFAccessory.prototype = {
                     if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.CLOSED);
                     this.api.stopDevice(this.roomId,this.deviceId);
                 }, this.timeOut * 1000);
-            } else if(callback) callback(1,0);
+            }
+            if(this.isWindowCovering){
+                this.api.closeDevice(this.roomId,this.deviceId,callback);
+                this.status = value;
+                
+                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentPosition, Characteristic.CurrentPosition.CLOSING);
+                
+                setTimeout(() => {
+                           if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentPosition, Characteristic.CurrentPosition.CLOSED);
+                           this.api.stopDevice(this.roomId,this.deviceId);
+                }, this.timeOut * 1000);
+            }
+            else if(callback) callback(1,0);
           }
           else {
             if(this.isGarageDoor) {
@@ -229,7 +242,19 @@ LightWaveRFAccessory.prototype = {
                 if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPEN);
                 this.api.stopDevice(this.roomId,this.deviceId);
               }, this.timeOut * 1000);
-            } else if(callback) callback(1,0);
+            }
+            if(this.isWindowCovering){
+                this.api.openDevice(this.roomId,this.deviceId,callback);
+                this.status = value;
+                
+                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentPosition, Characteristic.CurrentPosition.OPENING);
+                
+                setTimeout(() => {
+                           if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentPosition, Characteristic.CurrentPosition.OPEN);
+                           this.api.stopDevice(this.roomId,this.deviceId);
+                }, this.timeOut * 1000);
+            }
+            else if(callback) callback(1,0);
           }
           break;
     }//.bind(this));
@@ -315,6 +340,19 @@ LightWaveRFAccessory.prototype = {
         // Basic light controls, common to Hue and Hue lux
         openerService
         .getCharacteristic(Characteristic.TargetDoorState)
+        .on('get', function(callback) { that.getState("door", callback);})
+        .on('set', function(value, callback) { that.executeChange("door", value, callback);})
+        .value = this.extractValue("door", this.status);
+        
+        this.openerService = openerService;
+    }
+    else if(this.isWindowCovering) {
+        // Use HomeKit types defined in HAP node JS
+        var openerService = new Service.WindowCovering(this.name);
+        
+        // Basic light controls, common to Hue and Hue lux
+        openerService
+        .getCharacteristic(Characteristic.CurrentPosition)
         .on('get', function(callback) { that.getState("door", callback);})
         .on('set', function(value, callback) { that.executeChange("door", value, callback);})
         .value = this.extractValue("door", this.status);

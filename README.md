@@ -65,6 +65,14 @@ following syntac:
                     "deviceType": "G",
                     "timeOut": 10
                 }
+                {
+                    "roomId": 1,
+                    "roomName": "LivingRoom",
+                    "deviceId": 3,
+                    "deviceName": "MyBlinds",
+                    "deviceType": "WC",
+                    "timeOut": 15
+                }
             ]
         }
 ]
@@ -75,6 +83,7 @@ The following devices are supported:
 - Dimmeble Light: "deviceType": "D"
 - Switch: "deviceType": "S"
 - GarageDoor: "deviceType": "G"
+- WindowCovering: "deviceType": "WC" 
 
 # How to Determine Room Number:
 
