@@ -162,11 +162,6 @@ LightWaveRFAccessory.prototype = {
     
   // Create and set a light state
   executeChange: function(characteristic, value, callback) {
-      console.log("Whats here ");
-      console.log(characteristic.toLowerCase());
-      console.log("Value %s ", value);
-      console.log("Callback");
-      console.log(callback);
       
     switch(characteristic.toLowerCase()) {
       case 'identify':
@@ -246,27 +241,18 @@ LightWaveRFAccessory.prototype = {
           }
           break;
         case 'blinds':
-            console.log("Blinds CP %s", Characteristic.CurrentPosition);
-            console.log("Blinds TP %s", Characteristic.TargetPosition);
-            console.log("Blinds PS %s", Characteristic.PositionState.STOPPED);
-            console.log("Blinds POS %s", this.previousBlindsPosition);
-            
             
             if (value <= this.previousBlindsPosition) {
-                console.log("Closing ");
+                console.log((this.previousBlindsPosition-value)/100);
                 if(this.isWindowCovering){
                     this.api.closeDevice(this.roomId,this.deviceId,callback);
                     this.status = value;
                     
-                    if(this.windowOpenerService) {
-                        console.log("reply here");
-                    this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.DECREASING);
-                    }
-                    
+                    if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.DECREASING);
                     setTimeout(() => {
-                               console.log("Time Out Closing ");
-                               if(this.windowOpenerService){ this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
-                                    console.log("Timed Out Closing ");
+                               if(this.windowOpenerService){
+                                   this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                                   this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
                                }
                                this.api.stopDevice(this.roomId,this.deviceId);
                                }, this.timeOut * 1000* (this.previousBlindsPosition-value)/100); // full time out - state
@@ -274,29 +260,22 @@ LightWaveRFAccessory.prototype = {
                 else if(callback) callback(1,0);
             }
             else {
-                console.log("Opening ");
+                console.log((value-this.previousBlindsPosition)/100);
                 if(this.isWindowCovering){
                     this.api.openDevice(this.roomId,this.deviceId,callback);
                     this.status = value;
-                    
-                    console.log(this.windowOpenerService);
-                    
                     if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.INCREASING);
-                    
-                    console.log(this.windowOpenerService);
-                    
                     setTimeout(() => {
-                               console.log("Time Out Opening ");
-                               if(this.windowOpenerService){ this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                               if(this.windowOpenerService){
+                                    this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                                    this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
                             
-                                    console.log("Timeed Out Opening ");
                                }
                                this.api.stopDevice(this.roomId,this.deviceId);
                                }, this.timeOut * 1000 * (value-this.previousBlindsPosition)/100);
                 }
                 else if(callback) callback(1,0);
             }
-            this.previousBlindsPosition = value;
             
             break;
     }//.bind(this));
