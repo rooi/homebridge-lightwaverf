@@ -238,7 +238,7 @@ LightWaveRFAccessory.prototype = {
               if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPENING);
                 
               setTimeout(() => {
-                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPEN);
+                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPENING);
                 this.api.stopDevice(this.roomId,this.deviceId);
               }, this.timeOut * 1000);
             }
@@ -248,7 +248,7 @@ LightWaveRFAccessory.prototype = {
         case 'blinds':
             console.log("Blinds CP %s", Characteristic.CurrentPosition);
             console.log("Blinds TP %s", Characteristic.TargetPosition);
-            console.log("Blinds PS %s", Characteristic.PositionState);
+            console.log("Blinds PS %s", Characteristic.PositionState.STOPPED);
             console.log("Blinds POS %s", this.previousBlindsPosition);
             
             
@@ -258,11 +258,14 @@ LightWaveRFAccessory.prototype = {
                     this.api.closeDevice(this.roomId,this.deviceId,callback);
                     this.status = value;
                     
-                    if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                    if(this.windowOpenerService) {
+                        console.log("reply here");
+                    this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.DECREASING);
+                    }
                     
                     setTimeout(() => {
                                console.log("Time Out Closing ");
-                               if(this.openerService){ this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                               if(this.windowOpenerService){ this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
                                     console.log("Timed Out Closing ");
                                }
                                this.api.stopDevice(this.roomId,this.deviceId);
@@ -276,7 +279,11 @@ LightWaveRFAccessory.prototype = {
                     this.api.openDevice(this.roomId,this.deviceId,callback);
                     this.status = value;
                     
-                    if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                    console.log(this.windowOpenerService);
+                    
+                    if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.INCREASING);
+                    
+                    console.log(this.windowOpenerService);
                     
                     setTimeout(() => {
                                console.log("Time Out Opening ");
