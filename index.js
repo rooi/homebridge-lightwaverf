@@ -68,6 +68,8 @@ function LightWaveRFAccessory(log, device, api) {
   this.isWindowCovering = (device.deviceType.indexOf('WC') > -1);
   this.status = 0; // 0 = off, else on / percentage
   this.previousPercentage = 0;
+  this.previousBlindsPosition = 0;
+  this.currentBlindsPosition = 0;
   this.api = api;
   this.log = log;
   this.timeOut = device.timeOut ? device.timeOut : 2;
@@ -151,6 +153,8 @@ LightWaveRFAccessory.prototype = {
         return status;
       case 'door':
         return status;
+      case 'blinds':
+        return status;
       default:
         return null;
     }
@@ -158,6 +162,12 @@ LightWaveRFAccessory.prototype = {
     
   // Create and set a light state
   executeChange: function(characteristic, value, callback) {
+      console.log("Whats here ");
+      console.log(characteristic.toLowerCase());
+      console.log("Value %s ", value);
+      console.log("Callback");
+      console.log(callback);
+      
     switch(characteristic.toLowerCase()) {
       case 'identify':
         // Turn on twice to let the light blink
@@ -218,17 +228,6 @@ LightWaveRFAccessory.prototype = {
                     this.api.stopDevice(this.roomId,this.deviceId);
                 }, this.timeOut * 1000);
             }
-            if(this.isWindowCovering){
-                this.api.closeDevice(this.roomId,this.deviceId,callback);
-                this.status = value;
-                
-                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentPosition, Characteristic.CurrentPosition.CLOSING);
-                
-                setTimeout(() => {
-                           if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentPosition, Characteristic.CurrentPosition.CLOSED);
-                           this.api.stopDevice(this.roomId,this.deviceId);
-                }, this.timeOut * 1000);
-            }
             else if(callback) callback(1,0);
           }
           else {
@@ -243,20 +242,56 @@ LightWaveRFAccessory.prototype = {
                 this.api.stopDevice(this.roomId,this.deviceId);
               }, this.timeOut * 1000);
             }
-            if(this.isWindowCovering){
-                this.api.openDevice(this.roomId,this.deviceId,callback);
-                this.status = value;
-                
-                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentPosition, Characteristic.CurrentPosition.OPENING);
-                
-                setTimeout(() => {
-                           if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentPosition, Characteristic.CurrentPosition.OPEN);
-                           this.api.stopDevice(this.roomId,this.deviceId);
-                }, this.timeOut * 1000);
-            }
             else if(callback) callback(1,0);
           }
           break;
+        case 'blinds':
+            console.log("Blinds CP %s", Characteristic.CurrentPosition);
+            console.log("Blinds TP %s", Characteristic.TargetPosition);
+            console.log("Blinds PS %s", Characteristic.PositionState);
+            console.log("Blinds POS %s", this.previousBlindsPosition);
+            
+            
+            if (value <= this.previousBlindsPosition) {
+                console.log("Closing ");
+                if(this.isWindowCovering){
+                    this.api.closeDevice(this.roomId,this.deviceId,callback);
+                    this.status = value;
+                    
+                    if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                    
+                    setTimeout(() => {
+                               console.log("Time Out Closing ");
+                               if(this.openerService){ this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                                    console.log("Timed Out Closing ");
+                               }
+                               this.api.stopDevice(this.roomId,this.deviceId);
+                               }, this.timeOut * 1000* (this.previousBlindsPosition-value)/100); // full time out - state
+                }
+                else if(callback) callback(1,0);
+            }
+            else {
+                console.log("Opening ");
+                if(this.isWindowCovering){
+                    this.api.openDevice(this.roomId,this.deviceId,callback);
+                    this.status = value;
+                    
+                    if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                    
+                    setTimeout(() => {
+                               console.log("Time Out Opening ");
+                               if(this.windowOpenerService){ this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                            
+                                    console.log("Timeed Out Opening ");
+                               }
+                               this.api.stopDevice(this.roomId,this.deviceId);
+                               }, this.timeOut * 1000 * (value-this.previousBlindsPosition)/100);
+                }
+                else if(callback) callback(1,0);
+            }
+            this.previousBlindsPosition = value;
+            
+            break;
     }//.bind(this));
   },
 
@@ -273,7 +308,7 @@ LightWaveRFAccessory.prototype = {
       if (newValue != undefined) {
         callback(null, newValue);
       } else {
-        this.log("Device " + that.device.name + " does not support reading characteristic " + characteristic);
+        //this.log("Device " + that.device.name + " does not support reading characteristic " + characteristic);
         //  callback(Error("Device " + that.device.name + " does not support reading characteristic " + characteristic) );
         callback(1,0);
       }
@@ -338,6 +373,7 @@ LightWaveRFAccessory.prototype = {
         var openerService = new Service.GarageDoorOpener(this.name);
         
         // Basic light controls, common to Hue and Hue lux
+        
         openerService
         .getCharacteristic(Characteristic.TargetDoorState)
         .on('get', function(callback) { that.getState("door", callback);})
@@ -345,19 +381,29 @@ LightWaveRFAccessory.prototype = {
         .value = this.extractValue("door", this.status);
         
         this.openerService = openerService;
+         
     }
     else if(this.isWindowCovering) {
         // Use HomeKit types defined in HAP node JS
-        var openerService = new Service.WindowCovering(this.name);
+        var windowOpenerService = new Service.WindowCovering(this.name);
         
         // Basic light controls, common to Hue and Hue lux
-        openerService
-        .getCharacteristic(Characteristic.CurrentPosition)
-        .on('get', function(callback) { that.getState("door", callback);})
-        .on('set', function(value, callback) { that.executeChange("door", value, callback);})
-        .value = this.extractValue("door", this.status);
+        windowOpenerService
+        .getCharacteristic(Characteristic.TargetPosition)
+        .on('get', function(callback) { that.getState("blinds", callback);})
+        .on('set', function(value, callback) { that.executeChange("blinds", value, callback);})
+        .value = this.extractValue("blinds", this.status);
         
-        this.openerService = openerService;
+        /* does this needs to be added for better handeling current vs target position?
+         I deal with this by curde previous Blinds poition -
+         how to add this as it throws an eror
+        windowOpenerService
+        .addCharacteristic(Characteristic.CurrentPosition)
+        .on('get', function (callback) { that.getState("blinds", callback);})
+        .value = this.extractValue("blinds", this.currentBlindsPosition);
+        */
+        
+        this.windowOpenerService = windowOpenerService;
     }
 
 	var informationService = new Service.AccessoryInformation();
@@ -371,6 +417,7 @@ LightWaveRFAccessory.prototype = {
     if(this.lightbulbService) return [informationService, this.lightbulbService];
     else if(this.switchService) return [informationService, this.switchService];
     else if(this.openerService) return [informationService, this.openerService];
+    else if(this.windowOpenerService) return [informationService, this.windowOpenerService];
     else return [informationService];
   }
 };
