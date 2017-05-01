@@ -65,8 +65,11 @@ function LightWaveRFAccessory(log, device, api) {
   this.isLight = (device.deviceType.indexOf('L') > -1) || this.isDimmer;
   this.isSwitch = (device.deviceType.indexOf('S') > -1 || device.deviceType.indexOf('O') > -1);
   this.isGarageDoor = (device.deviceType.indexOf('G') > -1);
+  this.isWindowCovering = (device.deviceType.indexOf('WC') > -1);
   this.status = 0; // 0 = off, else on / percentage
   this.previousPercentage = 0;
+  this.previousBlindsPosition = 0;
+  this.currentBlindsPosition = 0;
   this.api = api;
   this.log = log;
   this.timeOut = device.timeOut ? device.timeOut : 2;
@@ -150,13 +153,24 @@ LightWaveRFAccessory.prototype = {
         return status;
       case 'door':
         return status;
+      case 'blinds':
+        return status;
       default:
         return null;
     }
   },
     
   // Create and set a light state
-  executeChange: function(characteristic, value, callback) {
+  executeChange: function(characteristic, value, callback, option) {
+      
+      console.log(characteristic);
+      console.log(callback);
+      console.log("value Eq opening: ", (value-this.previousBlindsPosition)/100);
+      
+      console.log("pv: ", this.previousBlindsPosition);
+      console.log("v: ", value);
+      console.log("opt: " ,option);
+      
     switch(characteristic.toLowerCase()) {
       case 'identify':
         // Turn on twice to let the light blink
@@ -216,7 +230,8 @@ LightWaveRFAccessory.prototype = {
                     if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.CLOSED);
                     this.api.stopDevice(this.roomId,this.deviceId);
                 }, this.timeOut * 1000);
-            } else if(callback) callback(1,0);
+            }
+            else if(callback) callback(1,0);
           }
           else {
             if(this.isGarageDoor) {
@@ -226,12 +241,78 @@ LightWaveRFAccessory.prototype = {
               if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPENING);
                 
               setTimeout(() => {
-                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPEN);
+                if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPENING);
                 this.api.stopDevice(this.roomId,this.deviceId);
               }, this.timeOut * 1000);
-            } else if(callback) callback(1,0);
+            }
+            else if(callback) callback(1,0);
           }
           break;
+        case 'blinds':
+                //Command to open
+                // TODO: Setting Blings position from the HomeHit App silder returns more than one value
+                // this results in a very poor behaviour, blings start moving then stop then start again due to the time out
+                // differnt approach is needed for next revision
+                if (value < this.previousBlindsPosition) {
+                    console.log("Closing");
+                    if(this.isWindowCovering){
+                        this.api.closeDevice(this.roomId,this.deviceId,callback);
+                        this.status = value;
+                        
+                        if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.DECREASING);
+                        setTimeout(() => {
+                                   if(this.windowOpenerService){
+                                    console.log("Closing time out");
+                                       this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                                       this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
+                                   }
+                                   console.log("Closing stopped");
+                                   this.api.stopDevice(this.roomId,this.deviceId);
+                                   this.previousBlindsPosition = value;
+                                   }, this.timeOut * 1000* (this.previousBlindsPosition-value)/100); // full time out - state
+                    }
+                    else if(callback) callback(1,0);
+                }
+                else if(value > this.previousBlindsPosition){
+                    console.log("Opening");
+                    if(this.isWindowCovering){
+                        this.api.openDevice(this.roomId,this.deviceId,callback);
+                        this.status = value;
+                        if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.INCREASING);
+                        setTimeout(() => {
+                                   if(this.windowOpenerService){
+                                    console.log("Opening time out");
+                                        this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                                        this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
+                                
+                                   }
+                                   console.log("Opening stoped");
+                                   this.api.stopDevice(this.roomId,this.deviceId);
+                                   this.previousBlindsPosition = value;
+                                   }, this.timeOut * 1000 * (value-this.previousBlindsPosition)/100);
+                    }
+                    else if(callback) callback(1,0);
+                }
+                else{
+                    console.log("Same Position");
+                    
+                    if(this.isWindowCovering){
+                        this.status = value;
+                        this.previousBlindsPosition = value;
+                        this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                        this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
+                        //FIXME: ideally I wouldnt be sending STOP but I didint work out how to send back info to HomeKit
+                        // its somthing to do with callback
+                        this.api.stopDevice(this.roomId,this.deviceId,callback);
+                        
+                    }
+                    else if(callback) callback(1,0);
+                    
+                }
+            break;
+
+            
+            
     }//.bind(this));
   },
 
@@ -248,7 +329,7 @@ LightWaveRFAccessory.prototype = {
       if (newValue != undefined) {
         callback(null, newValue);
       } else {
-        this.log("Device " + that.device.name + " does not support reading characteristic " + characteristic);
+        //this.log("Device " + that.device.name + " does not support reading characteristic " + characteristic);
         //  callback(Error("Device " + that.device.name + " does not support reading characteristic " + characteristic) );
         callback(1,0);
       }
@@ -313,6 +394,7 @@ LightWaveRFAccessory.prototype = {
         var openerService = new Service.GarageDoorOpener(this.name);
         
         // Basic light controls, common to Hue and Hue lux
+        
         openerService
         .getCharacteristic(Characteristic.TargetDoorState)
         .on('get', function(callback) { that.getState("door", callback);})
@@ -320,6 +402,32 @@ LightWaveRFAccessory.prototype = {
         .value = this.extractValue("door", this.status);
         
         this.openerService = openerService;
+         
+    }
+    else if(this.isWindowCovering) {
+        // Use HomeKit types defined in HAP node JS
+        var windowOpenerService = new Service.WindowCovering(this.name);
+        
+        // Basic light controls, common to Hue and Hue lux
+        windowOpenerService
+        .getCharacteristic(Characteristic.TargetPosition)
+        .on('get', function(callback) { that.getState("blinds", callback);})
+        .on('set', function(value, callback) { that.executeChange("blinds", value, callback, 0);})
+        .value = this.extractValue("blinds", this.status);
+        
+        /*
+        windowOpenerService
+        .getCharacteristic(Characteristic.CurrentPosition)
+        .on('get', function(callback) { that.getState("blinds", callback);})
+        .on('set', function(value, callback) { that.executeChange("blinds", value, callback, 1);})
+        .value = this.extractValue("blinds", this.status);
+         */
+        
+        //windowOpenerService.getCharacteristic(Characteristic.PositionState.STOPPED)
+
+    
+        
+        this.windowOpenerService = windowOpenerService;
     }
 
 	var informationService = new Service.AccessoryInformation();
@@ -333,6 +441,7 @@ LightWaveRFAccessory.prototype = {
     if(this.lightbulbService) return [informationService, this.lightbulbService];
     else if(this.switchService) return [informationService, this.switchService];
     else if(this.openerService) return [informationService, this.openerService];
+    else if(this.windowOpenerService) return [informationService, this.windowOpenerService];
     else return [informationService];
   }
 };
