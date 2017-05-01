@@ -249,9 +249,11 @@ LightWaveRFAccessory.prototype = {
           }
           break;
         case 'blinds':
-            if(1){
                 //Command to open
-                if (value <= this.previousBlindsPosition) {
+                // TODO: Setting Blings position from the HomeHit App silder returns more than one value
+                // this results in a very poor behaviour, blings start moving then stop then start again due to the time out
+                // differnt approach is needed for next revision
+                if (value < this.previousBlindsPosition) {
                     console.log("Closing");
                     if(this.isWindowCovering){
                         this.api.closeDevice(this.roomId,this.deviceId,callback);
@@ -271,7 +273,7 @@ LightWaveRFAccessory.prototype = {
                     }
                     else if(callback) callback(1,0);
                 }
-                else {
+                else if(value > this.previousBlindsPosition){
                     console.log("Opening");
                     if(this.isWindowCovering){
                         this.api.openDevice(this.roomId,this.deviceId,callback);
@@ -291,17 +293,22 @@ LightWaveRFAccessory.prototype = {
                     }
                     else if(callback) callback(1,0);
                 }
-            }
-            else{
-                //Checking Postion
-                console.log("Check");
-                this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
-                //this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
-
-                
-            }
-            
-            
+                else{
+                    console.log("Same Position");
+                    
+                    if(this.isWindowCovering){
+                        this.status = value;
+                        this.previousBlindsPosition = value;
+                        this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                        this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
+                        //FIXME: ideally I wouldnt be sending STOP but I didint work out how to send back info to HomeKit
+                        // its somthing to do with callback
+                        this.api.stopDevice(this.roomId,this.deviceId,callback);
+                        
+                    }
+                    else if(callback) callback(1,0);
+                    
+                }
             break;
 
             
