@@ -163,14 +163,6 @@ LightWaveRFAccessory.prototype = {
   // Create and set a light state
   executeChange: function(characteristic, value, callback, option) {
       
-      console.log(characteristic);
-      console.log(callback);
-      console.log("value Eq opening: ", (value-this.previousBlindsPosition)/100);
-      
-      console.log("pv: ", this.previousBlindsPosition);
-      console.log("v: ", value);
-      console.log("opt: " ,option);
-      
     switch(characteristic.toLowerCase()) {
       case 'identify':
         // Turn on twice to let the light blink
@@ -254,7 +246,6 @@ LightWaveRFAccessory.prototype = {
                 // this results in a very poor behaviour, blings start moving then stop then start again due to the time out
                 // differnt approach is needed for next revision
                 if (value < this.previousBlindsPosition) {
-                    console.log("Closing");
                     if(this.isWindowCovering){
                         this.api.closeDevice(this.roomId,this.deviceId,callback);
                         this.status = value;
@@ -262,11 +253,9 @@ LightWaveRFAccessory.prototype = {
                         if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.DECREASING);
                         setTimeout(() => {
                                    if(this.windowOpenerService){
-                                    console.log("Closing time out");
                                        this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
                                        this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
                                    }
-                                   console.log("Closing stopped");
                                    this.api.stopDevice(this.roomId,this.deviceId);
                                    this.previousBlindsPosition = value;
                                    }, this.timeOut * 1000* (this.previousBlindsPosition-value)/100); // full time out - state
@@ -274,19 +263,16 @@ LightWaveRFAccessory.prototype = {
                     else if(callback) callback(1,0);
                 }
                 else if(value > this.previousBlindsPosition){
-                    console.log("Opening");
                     if(this.isWindowCovering){
                         this.api.openDevice(this.roomId,this.deviceId,callback);
                         this.status = value;
                         if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.INCREASING);
                         setTimeout(() => {
                                    if(this.windowOpenerService){
-                                    console.log("Opening time out");
                                         this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
                                         this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
                                 
                                    }
-                                   console.log("Opening stoped");
                                    this.api.stopDevice(this.roomId,this.deviceId);
                                    this.previousBlindsPosition = value;
                                    }, this.timeOut * 1000 * (value-this.previousBlindsPosition)/100);
@@ -294,8 +280,6 @@ LightWaveRFAccessory.prototype = {
                     else if(callback) callback(1,0);
                 }
                 else{
-                    console.log("Same Position");
-                    
                     if(this.isWindowCovering){
                         this.status = value;
                         this.previousBlindsPosition = value;
@@ -307,7 +291,6 @@ LightWaveRFAccessory.prototype = {
                         
                     }
                     else if(callback) callback(1,0);
-                    
                 }
             break;
 
