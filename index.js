@@ -161,7 +161,15 @@ LightWaveRFAccessory.prototype = {
   },
     
   // Create and set a light state
-  executeChange: function(characteristic, value, callback) {
+  executeChange: function(characteristic, value, callback, option) {
+      
+      console.log(characteristic);
+      console.log(callback);
+      console.log("value Eq opening: ", (value-this.previousBlindsPosition)/100);
+      
+      console.log("pv: ", this.previousBlindsPosition);
+      console.log("v: ", value);
+      console.log("opt: " ,option);
       
     switch(characteristic.toLowerCase()) {
       case 'identify':
@@ -241,43 +249,63 @@ LightWaveRFAccessory.prototype = {
           }
           break;
         case 'blinds':
+            if(1){
+                //Command to open
+                if (value <= this.previousBlindsPosition) {
+                    console.log("Closing");
+                    if(this.isWindowCovering){
+                        this.api.closeDevice(this.roomId,this.deviceId,callback);
+                        this.status = value;
+                        
+                        if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.DECREASING);
+                        setTimeout(() => {
+                                   if(this.windowOpenerService){
+                                    console.log("Closing time out");
+                                       this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                                       this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
+                                   }
+                                   console.log("Closing stopped");
+                                   this.api.stopDevice(this.roomId,this.deviceId);
+                                   this.previousBlindsPosition = value;
+                                   }, this.timeOut * 1000* (this.previousBlindsPosition-value)/100); // full time out - state
+                    }
+                    else if(callback) callback(1,0);
+                }
+                else {
+                    console.log("Opening");
+                    if(this.isWindowCovering){
+                        this.api.openDevice(this.roomId,this.deviceId,callback);
+                        this.status = value;
+                        if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.INCREASING);
+                        setTimeout(() => {
+                                   if(this.windowOpenerService){
+                                    console.log("Opening time out");
+                                        this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                                        this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
+                                
+                                   }
+                                   console.log("Opening stoped");
+                                   this.api.stopDevice(this.roomId,this.deviceId);
+                                   this.previousBlindsPosition = value;
+                                   }, this.timeOut * 1000 * (value-this.previousBlindsPosition)/100);
+                    }
+                    else if(callback) callback(1,0);
+                }
+            }
+            else{
+                //Checking Postion
+                console.log("Check");
+                this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
+                //this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
+
+                
+            }
             
-            if (value <= this.previousBlindsPosition) {
-                console.log((this.previousBlindsPosition-value)/100);
-                if(this.isWindowCovering){
-                    this.api.closeDevice(this.roomId,this.deviceId,callback);
-                    this.status = value;
-                    
-                    if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.DECREASING);
-                    setTimeout(() => {
-                               if(this.windowOpenerService){
-                                   this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
-                                   this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
-                               }
-                               this.api.stopDevice(this.roomId,this.deviceId);
-                               }, this.timeOut * 1000* (this.previousBlindsPosition-value)/100); // full time out - state
-                }
-                else if(callback) callback(1,0);
-            }
-            else {
-                console.log((value-this.previousBlindsPosition)/100);
-                if(this.isWindowCovering){
-                    this.api.openDevice(this.roomId,this.deviceId,callback);
-                    this.status = value;
-                    if(this.windowOpenerService) this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.INCREASING);
-                    setTimeout(() => {
-                               if(this.windowOpenerService){
-                                    this.windowOpenerService.setCharacteristic(Characteristic.PositionState, Characteristic.PositionState.STOPPED);
-                                    this.windowOpenerService.getCharacteristic(Characteristic.CurrentPosition).setValue(value);
-                            
-                               }
-                               this.api.stopDevice(this.roomId,this.deviceId);
-                               }, this.timeOut * 1000 * (value-this.previousBlindsPosition)/100);
-                }
-                else if(callback) callback(1,0);
-            }
             
             break;
+
+            
+            
     }//.bind(this));
   },
 
@@ -377,17 +405,20 @@ LightWaveRFAccessory.prototype = {
         windowOpenerService
         .getCharacteristic(Characteristic.TargetPosition)
         .on('get', function(callback) { that.getState("blinds", callback);})
-        .on('set', function(value, callback) { that.executeChange("blinds", value, callback);})
+        .on('set', function(value, callback) { that.executeChange("blinds", value, callback, 0);})
         .value = this.extractValue("blinds", this.status);
         
-        /* does this needs to be added for better handeling current vs target position?
-         I deal with this by curde previous Blinds poition -
-         how to add this as it throws an eror
+        /*
         windowOpenerService
-        .addCharacteristic(Characteristic.CurrentPosition)
-        .on('get', function (callback) { that.getState("blinds", callback);})
-        .value = this.extractValue("blinds", this.currentBlindsPosition);
-        */
+        .getCharacteristic(Characteristic.CurrentPosition)
+        .on('get', function(callback) { that.getState("blinds", callback);})
+        .on('set', function(value, callback) { that.executeChange("blinds", value, callback, 1);})
+        .value = this.extractValue("blinds", this.status);
+         */
+        
+        //windowOpenerService.getCharacteristic(Characteristic.PositionState.STOPPED)
+
+    
         
         this.windowOpenerService = windowOpenerService;
     }
