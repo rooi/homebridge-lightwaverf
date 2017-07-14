@@ -63,7 +63,8 @@ function LightWaveRFAccessory(log, device, api) {
   this.device = device;
   this.isDimmer = (device.deviceType.indexOf('D') > -1);
   this.isLight = (device.deviceType.indexOf('L') > -1) || this.isDimmer;
-  this.isSwitch = (device.deviceType.indexOf('S') > -1 || device.deviceType.indexOf('O') > -1);
+  this.isSwitch = (device.deviceType.indexOf('S') > -1);
+  this.isOutlet = (device.deviceType.indexOf('O') > -1);
   this.isGarageDoor = (device.deviceType.indexOf('G') > -1);
   this.isWindowCovering = (device.deviceType.indexOf('WC') > -1);
   this.status = 0; // 0 = off, else on / percentage
@@ -335,6 +336,7 @@ LightWaveRFAccessory.prototype = {
 
     this.lightbulbService = 0;
     this.switchService = 0;
+    this.outletService = 0;
       
     if(this.isLight ) {
         // Use HomeKit types defined in HAP node JS
@@ -371,6 +373,19 @@ LightWaveRFAccessory.prototype = {
         .value = this.extractValue("power", this.status);
         
         this.switchService = switchService;
+    }
+    else if(this.isOutlet) {
+        // Use HomeKit types defined in HAP node JS
+        var outletService = new Service.Outlet(this.name);
+        
+        // Basic light controls, common to Hue and Hue lux
+        outletService
+        .getCharacteristic(Characteristic.On)
+        .on('get', function(callback) { that.getState("power", callback);})
+        .on('set', function(value, callback) { that.executeChange("power", value, callback);})
+        .value = this.extractValue("power", this.status);
+        
+        this.outletService = outletService;
     }
     else if(this.isGarageDoor) {
         // Use HomeKit types defined in HAP node JS
@@ -423,6 +438,7 @@ LightWaveRFAccessory.prototype = {
 
     if(this.lightbulbService) return [informationService, this.lightbulbService];
     else if(this.switchService) return [informationService, this.switchService];
+    else if(this.outletService) return [informationService, this.outletService];
     else if(this.openerService) return [informationService, this.openerService];
     else if(this.windowOpenerService) return [informationService, this.windowOpenerService];
     else return [informationService];
