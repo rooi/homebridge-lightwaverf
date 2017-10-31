@@ -47,6 +47,8 @@ function LightWaveRFPlatform(log, config) {
   this.pin = config["pin"];
   this.host = "web.trustsmartcloud.com";
     
+  this.timeout = config["timeout"] || 1000;
+    
   this.devices = config["devices"];
     
   if(config["manager_host"]) this.host = config["manager_host"];
@@ -93,7 +95,7 @@ LightWaveRFPlatform.prototype = {
       // use website
       if(that.email && that.pin) {
           
-          var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host}, function(devices) {
+          var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host,timeout:that.timeout}, function(devices) {
                                     
               // Add config for devices
               if(that.devices) {

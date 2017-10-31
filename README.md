@@ -27,7 +27,8 @@ Configuration sample:
           "ip_address": "192.168.1.123",
           "manager_host": "lightwaverfhost.co.uk",
           "email": "name@host.com",
-          "pin": "1234"
+          "pin": "1234",
+          "timeout": 1000
         }   
     ]
 
