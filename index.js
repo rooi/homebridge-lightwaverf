@@ -27,13 +27,36 @@
 var lightwaverf = require("lightwaverf");
 var fs = require('fs');
 var path = require('path');
+var inherits = require('util').inherits;
 
-var Service, Characteristic;
+var Service, Characteristic, BrightnessUpCharacteristic, BrightnessDownCharacteristic;
 
 module.exports = function(homebridge) {
  
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
+    
+  BrightnessUpCharacteristic = function () {
+    Characteristic.call(this, 'Up', '212131F4-2E14-4FF4-AE13-C97C4232499E');
+    this.setProps({
+        format: Characteristic.Formats.BOOL,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
+    });
+    //this.eventEnabled = true;
+    this.value = this.getDefaultValue();
+  };
+  inherits(BrightnessUpCharacteristic, Characteristic);
+    
+  BrightnessDownCharacteristic = function () {
+    Characteristic.call(this, 'Down', '212131F4-2E14-4FF4-AE13-C97C5232499E');
+    this.setProps({
+        format: Characteristic.Formats.BOOL,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
+    });
+    //this.eventEnabled = true;
+    this.value = this.getDefaultValue();
+  };
+  inherits(BrightnessDownCharacteristic, Characteristic);
   
   homebridge.registerPlatform("homebridge-lightwaverf", "LightWaveRF", LightWaveRFPlatform);
 }
@@ -76,6 +99,7 @@ function LightWaveRFAccessory(log, device, api) {
   this.api = api;
   this.log = log;
   this.timeOut = device.timeOut ? device.timeOut : 2;
+  this.brightness_step = 7;
 }
 
 function onErr(err) {
@@ -186,12 +210,15 @@ LightWaveRFAccessory.prototype = {
       case 'power':
         if (value > 0) {
             if(this.isDimmer) {
-                if(this.previousPercentage < 3.125 ) this.previousPercentage = 100; // Prevent very low last states
-                this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
+                if(this.previousPercentage < 3.125 ) {
+                    this.previousPercentage = 0; // Prevent very low last states
+                    this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
+                }
+                else this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
                 //this.status = this.previousPercentage;
             } else {
                 this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
-                this.status = 100;
+                this.status = this.previousPercentage;
             }
         }
         else {
@@ -205,7 +232,7 @@ LightWaveRFAccessory.prototype = {
         // Only write when change is larger than 5
         this.status = value;
         //if((value % 5) == 0) {
-            if(value > 0 && this.lightbulbService && !this.lightbulbService.getCharacteristic(Characteristic.On)) {
+            if(value > 0 && this.lightbulbService && !this.lightbulbService.getCharacteristic(Characteristic.On).getValue(null)) {
                 this.lightbulbService.getCharacteristic(Characteristic.On).setValue(true);
             }
             this.api.setDeviceDim(this.roomId,this.deviceId,value,callback);
@@ -213,7 +240,55 @@ LightWaveRFAccessory.prototype = {
         //    if(callback) callback();
         //}
         break;
-        case 'door':
+      case 'brightness_up':
+        if(value == 0)
+        {
+            this.log("Resetting brightness up button");
+            callback();
+        }
+//        else if(value > 0 && this.previousPercentage >= 100) {
+//            this.log("Maximum brightness reached");
+//            callback(); // limit the volume
+//        }
+        else {
+            //this.log("Starting brightness " + this.previousPercentage);
+            this.previousPercentage += this.brightness_step;
+            if(this.previousPercentage > 100) this.previousPercentage = 100;
+            this.log("Changing brightness " + this.previousPercentage);
+            
+            var targetChar = this.lightbulbService.getCharacteristic(BrightnessUpCharacteristic);
+            var targetCharBrightness = this.lightbulbService.getCharacteristic(Characteristic.Brightness);
+            //targetCharBrightness.getValue(null);
+            setTimeout(function(){targetChar.setValue(0);}, 10);
+            //this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
+            targetCharBrightness.setValue(this.previousPercentage, callback);
+        }
+        break;
+      case 'brightness_down':
+        if(value == 0)
+        {
+            this.log("Resetting brightness down button");
+            callback();
+        }
+//      else if(value > 0 && this.previousPercentage >= 100) {
+//          this.log("Maximum brightness reached");
+//          callback(); // limit the volume
+//      }
+        else {
+            //this.log("Starting brightness " + this.previousPercentage);
+            this.previousPercentage -= this.brightness_step;
+            if(this.previousPercentage < 0) this.previousPercentage = 0;
+            this.log("Changing brightness " + this.previousPercentage);
+
+            var targetChar = this.lightbulbService.getCharacteristic(BrightnessUpCharacteristic);
+            var targetCharBrightness = this.lightbulbService.getCharacteristic(Characteristic.Brightness);
+            //targetCharBrightness.getValue(null);
+            setTimeout(function(){targetChar.setValue(0);}, 10);
+            //this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
+            targetCharBrightness.setValue(this.previousPercentage, callback);
+        }
+        break;
+      case 'door':
           if (value == Characteristic.TargetDoorState.CLOSED) {
             if(this.isGarageDoor) {
                 this.api.closeDevice(this.roomId,this.deviceId,callback);
@@ -359,6 +434,16 @@ LightWaveRFAccessory.prototype = {
             .value = this.extractValue("brightness", this.status);
             lightbulbService.getCharacteristic(Characteristic.Brightness)
               .setProps({ minStep: 1 })
+            
+            lightbulbService
+            .addCharacteristic(BrightnessUpCharacteristic)
+            .on('get', function(callback) { callback(null, 0);})
+            .on('set', function(value, callback) { that.executeChange("brightness_up", value, callback);});
+            
+            lightbulbService
+            .addCharacteristic(BrightnessDownCharacteristic)
+            .on('get', function(callback) { callback(null, 0);})
+            .on('set', function(value, callback) { that.executeChange("brightness_down", value, callback);});
         }
         
         this.lightbulbService = lightbulbService;
