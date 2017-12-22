@@ -213,12 +213,15 @@ LightWaveRFAccessory.prototype = {
                 if(this.previousPercentage < 3.125 ) {
                     this.previousPercentage = 0; // Prevent very low last states
                     this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
+                    this.status = 0;
                 }
-                else this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
-                //this.status = this.previousPercentage;
+                else {
+                    this.api.setDeviceDim(this.roomId,this.deviceId,this.previousPercentage,callback);
+                    this.status = this.previousPercentage;
+                }
             } else {
                 this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
-                this.status = this.previousPercentage;
+                this.status = 1;
             }
         }
         else {
