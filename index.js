@@ -136,8 +136,26 @@ LightWaveRFPlatform.prototype = {
                   var device = api.devices[i];
                   console.log("device = ");
                   console.log(device);
-                  var accessory = new LightWaveRFAccessory(that.log, device, api);
-                  foundAccessories.push(accessory);
+                                    
+                  // check if the device was not specified already in the config
+                  var deviceSpecifiedInConfig = false;
+                  if(that.devices) {
+                      for(var j=0;j<that.devices.length;++j) {
+                          var deviceInConfig = that.devices[j];
+                          if(device.roomId == deviceInConfig.roomId &&
+                             device.roomName === deviceInConfig.roomName &&
+                             device.deviceId == deviceInConfig.deviceId &&
+                             device.deviceName === deviceInConfig.deviceName) {
+                              console.log("Previous device was found in the config, it will not be added");
+                              deviceSpecifiedInConfig = true;
+                          }
+                      }
+                  }
+                              
+                  if(!deviceSpecifiedInConfig) {
+                    var accessory = new LightWaveRFAccessory(that.log, device, api);
+                    foundAccessories.push(accessory);
+                  }
               }
               callback(foundAccessories);
           }.bind(this));
