@@ -312,28 +312,42 @@ LightWaveRFAccessory.prototype = {
       case 'door':
           if (value == Characteristic.TargetDoorState.CLOSED) {
             if(this.isGarageDoor) {
-                this.api.closeDevice(this.roomId,this.deviceId,callback);
+                // Is the garage triggered as automatic switch or as close/stop?
+                if(this.isSwitch)
+                    this.api.turnDeviceOff(this.roomId,this.deviceId, callback);
+                else
+                    this.api.closeDevice(this.roomId,this.deviceId,callback);
                 this.status = value;
                 
                 if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.CLOSING);
                 
                 setTimeout(() => {
                     if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.CLOSED);
-                    this.api.stopDevice(this.roomId,this.deviceId);
+                           
+                    // Is the garage triggered as automatic switch or as close/stop?
+                    if(!this.isSwitch)
+                        this.api.stopDevice(this.roomId,this.deviceId);
                 }, this.timeOut * 1000);
             }
             else if(callback) callback(1,0);
           }
           else {
             if(this.isGarageDoor) {
-              this.api.openDevice(this.roomId,this.deviceId,callback);
-              this.status = value;
+                // Is the garage triggered as automatic switch or as open/stop?
+                if(this.isSwitch)
+                    this.api.turnDeviceOn(this.roomId,this.deviceId, callback);
+                else
+                    this.api.openDevice(this.roomId,this.deviceId,callback);
+                this.status = value;
                 
-              if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPENING);
-                
-              setTimeout(() => {
                 if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPENING);
-                this.api.stopDevice(this.roomId,this.deviceId);
+                
+                setTimeout(() => {
+                    if(this.openerService) this.openerService.setCharacteristic(Characteristic.CurrentDoorState, Characteristic.CurrentDoorState.OPEN);
+                           
+                    // Is the garage triggered as automatic switch or as open/stop?
+                    if(!this.isSwitch)
+                        this.api.stopDevice(this.roomId,this.deviceId);
               }, this.timeOut * 1000);
             }
             else if(callback) callback(1,0);
@@ -469,7 +483,7 @@ LightWaveRFAccessory.prototype = {
         
         this.lightbulbService = lightbulbService;
     }
-    else if(this.isSwitch) {
+    else if(this.isSwitch && !this.isGarageDoor) {
         // Use HomeKit types defined in HAP node JS
         var switchService = new Service.Switch(this.name);
         
