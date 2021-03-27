@@ -35,7 +35,7 @@ Configuration sample:
 ```
 
 When you have a new lightwaverf link (+2016) you need to specify the devices yourself using the 
-following syntac:
+following syntax:
 
  ```
 "platforms": [

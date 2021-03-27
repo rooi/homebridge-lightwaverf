@@ -103,7 +103,7 @@ function LightWaveRFAccessory(log, device, api) {
 }
 
 function onErr(err) {
-    console.log(err);
+    this.log("Error: " + err);
     return 1;
 }
 
@@ -112,14 +112,7 @@ LightWaveRFPlatform.prototype = {
   accessories: function(callback) {
     this.log("Fetching LightWaveRF switches and dimmers...");
     var that = this;
-    /*
-    var cl = console.log
-    console.log = function(...args){
-        // custom logging logic
-        //cl.apply(console, args)
-        that.log(args);
-    };
-    */
+
     var getLights = function () {
       
       var foundAccessories = [];
@@ -127,14 +120,14 @@ LightWaveRFPlatform.prototype = {
       // use website
       if(that.email && that.pin && that.pin != "") {
           
-          var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host,timeout:that.timeout}, function(devices) {
+          var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host,timeout:that.timeout}, that.log, function(devices) {
                                     
               // Add config for devices
               if(that.devices) {
                 for(var i=0;i<that.devices.length;++i) {
                     var device = that.devices[i];
-                    console.log("device = ");
-                    console.log(device);
+                    that.log("device = ");
+                    that.log(device);
                     var accessory = new LightWaveRFAccessory(that.log, device, api);
                     foundAccessories.push(accessory);
                 }
@@ -142,8 +135,8 @@ LightWaveRFPlatform.prototype = {
           
               for(var i=0;i<devices.length;++i) {
                   var device = api.devices[i];
-                  console.log("device = ");
-                  console.log(device);
+                  that.log("device = ");
+                  that.log(device);
                                     
                   // check if the device was not specified already in the config
                   var deviceSpecifiedInConfig = false;
@@ -154,7 +147,7 @@ LightWaveRFPlatform.prototype = {
                              device.roomName === deviceInConfig.roomName &&
                              device.deviceId == deviceInConfig.deviceId &&
                              device.deviceName === deviceInConfig.deviceName) {
-                              console.log("Previous device was found in the config, it will not be added");
+                              that.log("Previous device was found in the config, it will not be added");
                               deviceSpecifiedInConfig = true;
                           }
                       }
@@ -175,8 +168,8 @@ LightWaveRFPlatform.prototype = {
               
               for(var i=0;i<that.devices.length;++i) {
                   var device = that.devices[i];
-                  console.log("device = ");
-                  console.log(device);
+                  that.log("device = ");
+                  that.log(device);
                   var accessory = new LightWaveRFAccessory(that.log, device, api);
                   foundAccessories.push(accessory);
               }
