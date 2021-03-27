@@ -24,7 +24,7 @@
 
 "use strict";
 
-var lightwaverf = require("lightwaverf");
+var lightwaverf = require("./lib/lightwaverf.js");
 var fs = require('fs');
 var path = require('path');
 var inherits = require('util').inherits;
@@ -112,12 +112,20 @@ LightWaveRFPlatform.prototype = {
   accessories: function(callback) {
     this.log("Fetching LightWaveRF switches and dimmers...");
     var that = this;
+    /*
+    var cl = console.log
+    console.log = function(...args){
+        // custom logging logic
+        //cl.apply(console, args)
+        that.log(args);
+    };
+    */
     var getLights = function () {
       
       var foundAccessories = [];
         
       // use website
-      if(that.email && that.pin) {
+      if(that.email && that.pin && that.pin != "") {
           
           var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host,timeout:that.timeout}, function(devices) {
                                     
@@ -172,8 +180,8 @@ LightWaveRFPlatform.prototype = {
                   var accessory = new LightWaveRFAccessory(that.log, device, api);
                   foundAccessories.push(accessory);
               }
-              callback(foundAccessories);
           }
+          callback(foundAccessories);
       }
 
     };

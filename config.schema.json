@@ -6,16 +6,75 @@
     "properties": {
       "name": {
         "title": "Name",
+        "description": "The name of your this service.",
         "type": "string",
         "default": "LightWaveRF",
         "required": true
       },
       "ip_address": {
           "title": "IP Address",
+          "description": "The ip adress of the lightwaverf link (e.g. ICS-1000)",
           "type": "string",
           "default": "192.168.1.123",
           "required": true
-      }
+      },
+      "manager_host": {
+          "title": "Host",
+          "description": "You can optionally specify the host to obtain devices automatically (e.g. lightwaverfhost.co.uk)",
+          "type": "string",
+          "default": "web.trustsmartcloud.com",
+          "required": false
+      },
+      "email": {
+          "title": "Email Address",
+          "description": "Your email adress to optionally obtain devices automatically.",
+          "type": "string",
+          "default": "",
+          "required": false
+      },
+      "pin": {
+          "title": "Pin",
+          "description": "The four digit pin to login and optionally obtain devices automatically.",
+          "type": "string",
+          "default": "",
+          "required": false
+      },
+      "devices": {
+                  "title": "Devices",
+                  "description": "When not using a login to obtain devices or when needed to override device properties, you can specify it here",
+                  "type": "array",
+                  "items": {
+                      "type": "object",
+                      "properties": {
+                          "roomId": {
+                              "title": "roomId",
+                              "type": "number",
+                              "required": true
+                          },
+                          "roomName": {
+                              "title": "roomName",
+                              "type": "string",
+                              "required": true
+                          },
+                          "deviceId": {
+                              "title": "deviceId",
+                              "type": "number",
+                              "required": true
+                          },
+                          "deviceName": {
+                              "title": "deviceName",
+                              "type": "string",
+                              "required": true
+                          },
+                          "deviceType": {
+                              "title": "deviceType",
+                              "type": "string",
+                              "default": "D",
+                              "required": true
+                          }
+                      }
+                  }
+            }
+        }
     }
-  }
 }

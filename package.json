@@ -1,11 +1,16 @@
 {
   "name": "homebridge-lightwaverf",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "LightwaveRF plugin for homebridge: https://github.com/nfarina/homebridge",
   "license": "ISC",
   "keywords": [
     "homebridge-plugin"
   ],
+  "author": "rooi",
+    "funding": {
+      "type" : "paypal",
+      "url" : "https://paypal.me/rooirooi"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/rooi/homebridge-lightwaverf.git"
@@ -15,6 +20,5 @@
     "homebridge": ">=0.2.0"
   },
   "dependencies": {
-    "lightwaverf": "https://github.com/rooi/node-lightwaverf.git"
   }
 }
