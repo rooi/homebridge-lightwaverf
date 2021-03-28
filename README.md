@@ -55,7 +55,7 @@ following syntax:
                     "roomId": 1,
                     "roomName": "LivingRoom",
                     "deviceId": 2,
-                    "deviceName": "MyLight",
+                    "deviceName": "MyLight2",
                     "deviceType": "D"
                 },
                 {
@@ -65,7 +65,7 @@ following syntax:
                     "deviceName": "MyGarageDoor",
                     "deviceType": "G",
                     "timeOut": 10
-                }
+                },
                 {
                     "roomId": 1,
                     "roomName": "LivingRoom",

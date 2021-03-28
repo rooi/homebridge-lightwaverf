@@ -164,7 +164,7 @@ LightWaveRFPlatform.prototype = {
       else {
           // Use config for devices
           if(that.devices) {
-              var api = new lightwaverf({ip:that.ip_address});
+              var api = new lightwaverf({ip:that.ip_address}, that.log);
               
               for(var i=0;i<that.devices.length;++i) {
                   var device = that.devices[i];
