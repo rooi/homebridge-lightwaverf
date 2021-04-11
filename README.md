@@ -1,4 +1,6 @@
 # homebridge-lightwaverf
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+[![homebridge-lightwaverf](https://badgen.net/npm/v/homebridge-lightwaverf?icon=npm)](https://www.npmjs.com/package/homebridge-lightwaverf)
 LightWaveRF plugin for homebridge: https://github.com/nfarina/homebridge
 Note: This plugin communicates with the KlikAanKlikUit ICS-1000 or Lightwave Link
 Set the correct manager_host in the configuration:
