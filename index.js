@@ -74,11 +74,15 @@ function LightWaveRFPlatform(log, config) {
     
   this.devices = config["devices"];
     
+  this.api = null;
+    
   if(config["manager_host"]) this.host = config["manager_host"];
   
   this.log("LightWaveRF Platform Plugin Version " + this.getVersion());
   
-    
+  // Prepare to kill pyshell
+  process.on('SIGINT', () => { this.log("receive SIGINT. Closing"); if(this.api) this.api.close() })
+  process.on('SIGTERM', () => { this.log("receive SIGTERM. Closing"); if(this.api) this.api.close() })
 }
 
 function LightWaveRFAccessory(log, device, api) {
@@ -132,34 +136,40 @@ LightWaveRFPlatform.prototype = {
                     foundAccessories.push(accessory);
                 }
               }
-          
-              for(var i=0;i<devices.length;++i) {
-                  var device = api.devices[i];
-                  that.log("device = ");
-                  that.log(device);
-                                    
-                  // check if the device was not specified already in the config
-                  var deviceSpecifiedInConfig = false;
-                  if(that.devices) {
-                      for(var j=0;j<that.devices.length;++j) {
-                          var deviceInConfig = that.devices[j];
-                          if(device.roomId == deviceInConfig.roomId &&
-                             device.roomName === deviceInConfig.roomName &&
-                             device.deviceId == deviceInConfig.deviceId &&
-                             device.deviceName === deviceInConfig.deviceName) {
-                              that.log("Previous device was found in the config, it will not be added");
-                              deviceSpecifiedInConfig = true;
+              if(devices == null) {
+                  that.log("Could not obtain LightWaveRF devices from the server. Using manual configuration");
+              }
+              else{
+                  for(var i=0;i<devices.length;++i) {
+                      var device = api.devices[i];
+                      that.log("device = ");
+                      that.log(device);
+                                        
+                      // check if the device was not specified already in the config
+                      var deviceSpecifiedInConfig = false;
+                      if(that.devices) {
+                          for(var j=0;j<that.devices.length;++j) {
+                              var deviceInConfig = that.devices[j];
+                              if(device.roomId == deviceInConfig.roomId &&
+                                 device.roomName === deviceInConfig.roomName &&
+                                 device.deviceId == deviceInConfig.deviceId &&
+                                 device.deviceName === deviceInConfig.deviceName) {
+                                  that.log("Previous device was found in the config, it will not be added");
+                                  deviceSpecifiedInConfig = true;
+                              }
                           }
                       }
-                  }
-                              
-                  if(!deviceSpecifiedInConfig) {
-                    var accessory = new LightWaveRFAccessory(that.log, device, api);
-                    foundAccessories.push(accessory);
+                                  
+                      if(!deviceSpecifiedInConfig) {
+                        var accessory = new LightWaveRFAccessory(that.log, device, api);
+                        foundAccessories.push(accessory);
+                      }
                   }
               }
               callback(foundAccessories);
           }.bind(this));
+          
+          that.api = api; // store for close()
       }
       else {
           // Use config for devices
@@ -173,6 +183,7 @@ LightWaveRFPlatform.prototype = {
                   var accessory = new LightWaveRFAccessory(that.log, device, api);
                   foundAccessories.push(accessory);
               }
+              that.api = api; // store for close()
           }
           callback(foundAccessories);
       }
