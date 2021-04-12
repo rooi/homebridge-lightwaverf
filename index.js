@@ -472,14 +472,14 @@ LightWaveRFAccessory.prototype = {
         lightbulbService
         .getCharacteristic(Characteristic.On)
         .on('get', function(callback) { that.getState("power", callback);})
-        .on('set', function(value) { that.executeChange("power", value);})
+        .on('set', function(value, callback) { that.executeChange("power", value, callback);})
         .value = this.extractValue("power", this.status);
 
         if(this.isDimmer) {
             lightbulbService
             .addCharacteristic(Characteristic.Brightness)
             .on('get', function(callback) { that.getState("brightness", callback);})
-            .on('set', function(value) { that.executeChange("brightness", value);})
+            .on('set', function(value, callback) { that.executeChange("brightness", value, callback);})
             .value = this.extractValue("brightness", this.status);
             lightbulbService.getCharacteristic(Characteristic.Brightness)
               .setProps({ minStep: 1 })
@@ -487,12 +487,12 @@ LightWaveRFAccessory.prototype = {
             lightbulbService
             .addCharacteristic(BrightnessUpCharacteristic)
             .on('get', function(callback) { callback(null, 0);})
-            .on('set', function(value) { that.executeChange("brightness_up", value);});
+            .on('set', function(value, callback) { that.executeChange("brightness_up", value, callback);});
             
             lightbulbService
             .addCharacteristic(BrightnessDownCharacteristic)
             .on('get', function(callback) { callback(null, 0);})
-            .on('set', function(value) { that.executeChange("brightness_down", value);});
+            .on('set', function(value, callback) { that.executeChange("brightness_down", value, callback);});
         }
         
         this.lightbulbService = lightbulbService;
@@ -505,7 +505,7 @@ LightWaveRFAccessory.prototype = {
         switchService
         .getCharacteristic(Characteristic.On)
         .on('get', function(callback) { that.getState("power", callback);})
-        .on('set', function(value) { that.executeChange("power", value);})
+        .on('set', function(value, callback) { that.executeChange("power", value, callback);})
         .value = this.extractValue("power", this.status);
         
         this.switchService = switchService;
@@ -518,7 +518,7 @@ LightWaveRFAccessory.prototype = {
         outletService
         .getCharacteristic(Characteristic.On)
         .on('get', function(callback) { that.getState("power", callback);})
-        .on('set', function(value) { that.executeChange("power", value);})
+        .on('set', function(value, callback) { that.executeChange("power", value, callback);})
         .value = this.extractValue("power", this.status);
         
         this.outletService = outletService;
@@ -532,7 +532,7 @@ LightWaveRFAccessory.prototype = {
         openerService
         .getCharacteristic(Characteristic.TargetDoorState)
         .on('get', function(callback) { that.getState("door", callback);})
-        .on('set', function(value) { that.executeChange("door", value);})
+        .on('set', function(value, callback) { that.executeChange("door", value, callback);})
         .value = this.extractValue("door", this.status);
         
         this.openerService = openerService;
@@ -546,14 +546,14 @@ LightWaveRFAccessory.prototype = {
         windowOpenerService
         .getCharacteristic(Characteristic.TargetPosition)
         .on('get', function(callback) { that.getState("blinds", callback);})
-        .on('set', function(value) { that.executeChange("blinds", value, 0);})
+        .on('set', function(value, callback) { that.executeChange("blinds", value, callback, 0);})
         .value = this.extractValue("blinds", this.status);
         
         /*
         windowOpenerService
         .getCharacteristic(Characteristic.CurrentPosition)
         .on('get', function(callback) { that.getState("blinds", callback);})
-        .on('set', function(value) { that.executeChange("blinds", value, 1);})
+        .on('set', function(value, callback) { that.executeChange("blinds", value, callback, 1);})
         .value = this.extractValue("blinds", this.status);
          */
         
