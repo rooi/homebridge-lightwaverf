@@ -68,7 +68,6 @@ function LightWaveRFPlatform(log, config) {
     
   this.email = config["email"];
   this.pin = config["pin"];
-  this.host = "web.trustsmartcloud.com";
     
   this.timeout = config["timeout"] || 1000;
     
@@ -76,7 +75,12 @@ function LightWaveRFPlatform(log, config) {
     
   this.api = null;
     
-  if(config["manager_host"]) this.host = config["manager_host"];
+  this.host = config["manager_host"] || "web.trustsmartcloud.com";
+  
+  // the path of trustsmartcloud and lightwaverfhost differ
+  var temp_host_path = "/manager/index.php";
+  if(this.host == "lightwaverfhost.co.uk") temp_host_path = "/cocomanager/index.php";
+  this.host_path = config["manager_host_path"] || temp_host_path;
   
   this.log("LightWaveRF Platform Plugin Version " + this.getVersion());
   
@@ -124,7 +128,7 @@ LightWaveRFPlatform.prototype = {
       // use website
       if(that.email && that.pin && that.pin != "") {
           
-          var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host,timeout:that.timeout}, that.log, function(devices) {
+          var api = new lightwaverf({ip:that.ip_address,email:that.email,pin:that.pin,host:that.host,host_path:that.host_path,timeout:that.timeout}, that.log, function(devices) {
                                     
               // Add config for devices
               if(that.devices) {
