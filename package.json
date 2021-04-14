@@ -1,6 +1,6 @@
 {
   "name": "homebridge-lightwaverf",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "LightwaveRF plugin for homebridge: https://github.com/nfarina/homebridge",
   "license": "ISC",
   "keywords": [
