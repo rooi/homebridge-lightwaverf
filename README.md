@@ -9,6 +9,7 @@ Note: This plugin communicates with the KlikAanKlikUit ICS-1000 or Lightwave Lin
 Set the correct manager_host in the configuration:
 - web.trustsmartcloud.com
 - lightwaverfhost.co.uk
+- control-api.lightwaverf.com
 
 # Installation
 
