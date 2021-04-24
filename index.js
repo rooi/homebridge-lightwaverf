@@ -101,7 +101,7 @@ function LightWaveRFAccessory(log, device, api) {
   this.isGarageDoor = (device.deviceType.indexOf('G') > -1);
   this.isWindowCovering = (device.deviceType.indexOf('WC') > -1);
   this.status = 0; // 0 = off, else on / percentage
-  this.previousPercentage = 0;
+  this.previousPercentage = 50;
   this.previousBlindsPosition = 0;
   this.currentBlindsPosition = 0;
   this.api = api;
