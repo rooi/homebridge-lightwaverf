@@ -117,3 +117,20 @@ For Windows PC
 Download PacketSender - https://packetsender.com/
 Send 100,!F*p. to the Lightwave Link on port 9760
 When the Lightwave Link starts flashing, press the Link button
+
+# Workaround to trigger turning all devices off in a room
+
+Add a dummy switch in the config with the room number you for which you would like 
+to add a switch to turn off all lights. Add a dummy device number < 0. E.g.:
+
+ ```
+"devices": [
+                {
+                    "roomId": 3,
+                    "roomName": "Hal",
+                    "deviceId": -1,
+                    "deviceName": "RoomOff",
+                    "deviceType": "S"
+                }
+            ]
+ ```

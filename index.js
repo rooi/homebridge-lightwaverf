@@ -256,14 +256,25 @@ LightWaveRFAccessory.prototype = {
                     this.status = this.previousPercentage;
                 }
             } else {
-                this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
-                this.status = 1;
+                if(this.deviceId < 0) {
+                  this.api.turnRoomOff(this.roomId,callback);
+                  this.status = 1;
+                } else {
+                  this.api.turnDeviceOn(this.roomId,this.deviceId,callback);
+                  this.status = 1;
+                }
             }
         }
         else {
           //this.previousPercentage = 0;
-          this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
-          this.status = 0;
+          if(this.deviceId < 0) {
+            // do nothing
+            if(callback) callback();
+            this.status = 0;
+          } else {
+            this.api.turnDeviceOff(this.roomId,this.deviceId,callback);
+            this.status = 0;
+          }
         }
         break;
       case 'brightness':
